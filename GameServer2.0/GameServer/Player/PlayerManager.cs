@@ -49,7 +49,7 @@ namespace GameServer
 
         public Player? GetPlayer(NetPeer netPeer)
         {
-            return Players.Values.FirstOrDefault((a) => a.Peer == netPeer);
+            return Players.Values.FirstOrDefault((a) => a.NetPeer == netPeer);
         }
 
         public void RemovePlayer(int id)

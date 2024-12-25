@@ -111,12 +111,18 @@ namespace GameServer
         {
             if (operationHandler == null)
                 return;
+            try
+            {
+                Log.Information("Listener_NetworkReceiveEvent {0}", peer.ToString());
 
-            Log.Information("Listener_NetworkReceiveEvent {0}", peer.ToString());
+                OperationCode operationCode = (OperationCode)reader.GetUShort();
 
-            OperationCode operationCode = (OperationCode)reader.GetUShort();
-
-            operationHandler.OnRequest(peer, operationCode, reader.GetRemainingBytes(), deliveryMethod);
+                operationHandler.OnRequest(peer, operationCode, reader.GetRemainingBytes(), deliveryMethod);
+            }
+            catch (Exception e)
+            {
+                Log.Error(e.ToString());
+            }
         }
 
         /// <summary>

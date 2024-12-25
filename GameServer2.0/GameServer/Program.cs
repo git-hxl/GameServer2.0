@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Serilog;
-using Serilog.Events;
 
 namespace GameServer
 {

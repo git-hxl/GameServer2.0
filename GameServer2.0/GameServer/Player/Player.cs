@@ -1,5 +1,4 @@
 ﻿using LiteNetLib;
-using LiteNetLib.Utils;
 using Serilog;
 using Utils;
 
@@ -9,7 +8,7 @@ namespace GameServer
     {
         public int ID { get; private set; }
 
-        public NetPeer? Peer { get; private set; }
+        public NetPeer? NetPeer { get; private set; }
 
         public Room? Room { get; private set; }
 
@@ -21,7 +20,7 @@ namespace GameServer
         public void Init(int id, NetPeer netPeer)
         {
             ID = id;
-            Peer = netPeer;
+            NetPeer = netPeer;
         }
 
         public void OnRelease()
@@ -29,7 +28,7 @@ namespace GameServer
             //throw new NotImplementedException();
 
             ID = -1;
-            Peer = null;
+            NetPeer = null;
         }
 
 
@@ -53,22 +52,6 @@ namespace GameServer
             {
                 Log.Information("OnExitRoom ID:{0} RoomID:{1}", ID, Room.RoomID);
                 Room = null;
-            }
-        }
-
-        public void SendResponse(OperationCode operationCode, ReturnCode returnCode, byte[]? data, DeliveryMethod deliveryMethod)
-        {
-            if (Peer != null)
-            {
-                NetDataWriter netDataWriter = new NetDataWriter();
-
-                netDataWriter.Put((ushort)operationCode);
-                netDataWriter.Put((ushort)(returnCode));
-
-                if (data != null)
-                    netDataWriter.Put(data);
-
-                Peer.Send(netDataWriter, deliveryMethod);
             }
         }
     }

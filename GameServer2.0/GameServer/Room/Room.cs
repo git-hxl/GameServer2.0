@@ -7,6 +7,8 @@ namespace GameServer
     public class Room : IReference
     {
         public int RoomID { get; private set; }
+
+        public int MasterID { get; private set; }
         public ConcurrentDictionary<int, Player> Players { get; } = new ConcurrentDictionary<int, Player>();
         /// <summary>
         /// 不活动时间
@@ -18,6 +20,8 @@ namespace GameServer
         {
             RoomID = roomID;
 
+            MasterID = -1;
+
             Inactived = false;
             InactiveTime = 0;
         }
@@ -28,9 +32,22 @@ namespace GameServer
             {
                 player.OnJoinRoom(this);
 
+                if (MasterID == -1)
+                {
+                    MasterID = player.ID;
+                }
+
                 return true;
             }
             return false;
+        }
+
+        public Player? GetPlayer(int playerID)
+        {
+            Player? player;
+            Players.TryGetValue(playerID, out player);
+
+            return player;
         }
 
         public void RemovePlayer(int id)
@@ -38,6 +55,12 @@ namespace GameServer
             if (Players.TryRemove(id, out Player? player))
             {
                 player.OnExitRoom();
+
+                if (MasterID == id)
+                {
+                    Player? master = Players.Values.FirstOrDefault((a) => a.NetPeer != null);
+                    MasterID = master != null ? master.ID : -1;
+                }
             }
         }
 
