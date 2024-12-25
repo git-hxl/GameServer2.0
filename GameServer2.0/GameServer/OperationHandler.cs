@@ -19,7 +19,7 @@ namespace GameServer
                     OnRegister(peer, data, deliveryMethod);
                     break;
                 case OperationCode.JoinRoom:
-                    OnJointRoom(peer, data, deliveryMethod);
+                    OnJoinRoom(peer, data, deliveryMethod);
                     break;
                 case OperationCode.OnJoinRoom:
                     break;
@@ -54,7 +54,7 @@ namespace GameServer
             netPeer.SendResponse(OperationCode.Login, ReturnCode.Success, null, deliveryMethod);
         }
 
-        private void OnJointRoom(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
+        private void OnJoinRoom(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
         {
             JoinRoomRequest joinRoomRequest = MessagePackSerializer.Deserialize<JoinRoomRequest>(data);
 
