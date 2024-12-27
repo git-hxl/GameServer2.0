@@ -1,23 +1,27 @@
-﻿using LiteNetLib;
+﻿using GameServer.Protocol;
+using GameServer.Utils;
+using LiteNetLib;
+using MessagePack;
 using Serilog;
 using Utils;
+
 
 namespace GameServer
 {
     public class Player : IReference
     {
-        public int ID { get; private set; }
+        public int ID { get; protected set; }
 
-        public NetPeer? NetPeer { get; private set; }
+        public NetPeer? NetPeer { get; protected set; }
 
-        public Room? Room { get; private set; }
+        public Room? Room { get; protected set; }
 
         public void OnAcquire()
         {
             //throw new NotImplementedException();
         }
 
-        public void Init(int id, NetPeer netPeer)
+        public virtual void Init(int id, NetPeer? netPeer)
         {
             ID = id;
             NetPeer = netPeer;
@@ -29,6 +33,11 @@ namespace GameServer
 
             ID = -1;
             NetPeer = null;
+        }
+
+        public virtual void OnUpdate()
+        {
+
         }
 
 

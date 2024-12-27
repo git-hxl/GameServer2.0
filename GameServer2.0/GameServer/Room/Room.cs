@@ -1,4 +1,8 @@
-﻿using Serilog;
+﻿using GameServer.Protocol;
+using GameServer.Utils;
+using LiteNetLib;
+using MessagePack;
+using Serilog;
 using System.Collections.Concurrent;
 using Utils;
 
@@ -30,13 +34,14 @@ namespace GameServer
         {
             if (Players.TryAdd(player.ID, player))
             {
-                player.OnJoinRoom(this);
-
                 if (MasterID == -1)
                 {
                     MasterID = player.ID;
                 }
 
+                OnPlayerJoinRoomResponse(player);
+
+                player.OnJoinRoom(this);
                 return true;
             }
             return false;
@@ -54,19 +59,21 @@ namespace GameServer
         {
             if (Players.TryRemove(id, out Player? player))
             {
-                player.OnExitRoom();
-
                 if (MasterID == id)
                 {
                     Player? master = Players.Values.FirstOrDefault((a) => a.NetPeer != null);
                     MasterID = master != null ? master.ID : -1;
                 }
+                player.OnExitRoom();
+                OnPlayerLeaveRoomResponse(player);
             }
         }
 
         public void OnCloseRoom()
         {
             Log.Information("OnCloseRoom RoomID:{0}", RoomID);
+
+            NoticeToAll(OperationCode.OnRoomClose, ReturnCode.Success, null);
 
             foreach (var item in Players)
             {
@@ -99,6 +106,92 @@ namespace GameServer
                     Inactived = true;
                 }
             }
+
+            foreach (var item in Players)
+            {
+                Player player = item.Value;
+
+                player.OnUpdate();
+            }
+        }
+
+        public void NoticeToPlayer(Player player, OperationCode code, ReturnCode returnCode, byte[]? data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
+        {
+            if (player.NetPeer != null)
+            {
+                player.NetPeer.SendResponse(code, returnCode, data, deliveryMethod);
+            }
+        }
+
+        public void NoticeToOthers(Player self, OperationCode code, ReturnCode returnCode, byte[]? data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
+        {
+            foreach (var item in Players)
+            {
+                Player player = item.Value;
+                if (player.NetPeer != null && player != self)
+                {
+                    player.NetPeer.SendResponse(code, returnCode, data, deliveryMethod);
+                }
+            }
+        }
+
+        public void NoticeToAll(OperationCode code, ReturnCode returnCode, byte[]? data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
+        {
+            foreach (var item in Players)
+            {
+                Player player = item.Value;
+                if (player.NetPeer != null)
+                {
+                    player.NetPeer.SendResponse(code, returnCode, data, deliveryMethod);
+                }
+            }
+        }
+
+
+        public void OnPlayerJoinRoomResponse(Player player)
+        {
+            JoinRoomResponse joinRoomResponse = new JoinRoomResponse();
+
+            joinRoomResponse.MasterID = MasterID;
+            joinRoomResponse.RoomID = RoomID;
+            joinRoomResponse.Others = new List<PlayerInfoInRoom>();
+
+            foreach (var item in Players)
+            {
+                if (item.Value != player)
+                {
+                    PlayerInfoInRoom otherInfo = GetPlayerInfoInRoom(item.Value);
+                    joinRoomResponse.Others.Add(otherInfo);
+                }
+            }
+
+            byte[] data = MessagePackSerializer.Serialize(joinRoomResponse);
+
+            NoticeToPlayer(player, OperationCode.OnJoinRoom, ReturnCode.Success, data);
+
+            PlayerInfoInRoom playerInfoInRoom = new PlayerInfoInRoom();
+            playerInfoInRoom.PlayerID = player.ID;
+
+            data = MessagePackSerializer.Serialize(playerInfoInRoom);
+
+            NoticeToOthers(player, OperationCode.OnOtherJoinRoom, ReturnCode.Success, data);
+        }
+
+        public void OnPlayerLeaveRoomResponse(Player player)
+        {
+            NoticeToPlayer(player, OperationCode.OnLeaveRoom, ReturnCode.Success, null);
+
+            PlayerInfoInRoom playerInfoInRoom = GetPlayerInfoInRoom(player);
+            byte[] data = MessagePackSerializer.Serialize(playerInfoInRoom);
+
+            NoticeToOthers(player, OperationCode.OnOtherJoinRoom, ReturnCode.Success, data);
+        }
+
+        public PlayerInfoInRoom GetPlayerInfoInRoom(Player player)
+        {
+            PlayerInfoInRoom playerInfoInRoom = new PlayerInfoInRoom();
+            playerInfoInRoom.PlayerID = player.ID;
+            return playerInfoInRoom;
         }
     }
 }

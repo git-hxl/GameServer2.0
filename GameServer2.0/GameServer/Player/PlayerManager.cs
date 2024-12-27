@@ -40,6 +40,22 @@ namespace GameServer
             return player;
         }
 
+        public Robot GetOrCreateRobot(int id)
+        {
+            Robot? robot = GetPlayer(id) as Robot;
+            if (robot == null)
+            {
+                robot = ReferencePool.Instance.Acquire<Robot>();
+
+                robot.Init(id, null);
+
+                Players.TryAdd(id, robot);
+            }
+
+            return robot;
+        }
+
+
         public Player? GetPlayer(int id)
         {
             Player? player;

@@ -4,7 +4,7 @@ namespace GameServer
 {
     public enum OperationCode : ushort
     {
-        Login =0,
+        Login = 0,
         Register,
 
         JoinRoom,
@@ -15,6 +15,13 @@ namespace GameServer
         OnLeaveRoom,
         OnOtherLeaveRoom,
 
+        OnRoomClose,
+
         SyncEvent,
+    }
+
+    public enum EventCode : ushort
+    {
+        SyncTransform,
     }
 }

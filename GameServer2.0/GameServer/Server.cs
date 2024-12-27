@@ -83,7 +83,7 @@ namespace GameServer
         /// <param name="request"></param>
         private void Listener_ConnectionRequestEvent(ConnectionRequest request)
         {
-            Log.Information("Listener_ConnectionRequestEvent {0}", request.RemoteEndPoint.ToString());
+            Log.Information("OnConnectionRequest {0}", request.RemoteEndPoint.ToString());
 
             if (config == null)
                 return;
@@ -96,7 +96,7 @@ namespace GameServer
         /// <param name="peer"></param>
         private void Listener_PeerConnectedEvent(NetPeer peer)
         {
-            Log.Information("Listener_PeerConnectedEvent {0}", peer.ToString());
+            Log.Information("OnPeerConnected {0}", peer.ToString());
         }
 
 
@@ -113,7 +113,7 @@ namespace GameServer
                 return;
             try
             {
-                Log.Information("Listener_NetworkReceiveEvent {0}", peer.ToString());
+                //Log.Information("Listener_NetworkReceiveEvent {0}", peer.ToString());
 
                 OperationCode operationCode = (OperationCode)reader.GetUShort();
 
@@ -132,7 +132,7 @@ namespace GameServer
         /// <param name="disconnectInfo"></param>
         private void Listener_PeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
         {
-            Log.Information("Listener_PeerDisconnectedEvent {0}", peer.ToString());
+            Log.Information("OnPeerDisconnected {0}", peer.ToString());
 
             Player? player = PlayerManager.Instance.GetPlayer(peer);
 

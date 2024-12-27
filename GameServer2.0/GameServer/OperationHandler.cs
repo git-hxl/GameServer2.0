@@ -64,7 +64,14 @@ namespace GameServer
 
             if (player == null)
             {
-                player = PlayerManager.Instance.GetOrCreatePlayer(joinRoomRequest.PlayerID, netPeer);
+                if(joinRoomRequest.IsRobot)
+                {
+                    player = PlayerManager.Instance.GetOrCreateRobot(joinRoomRequest.PlayerID);
+                }
+                else
+                {
+                    player = PlayerManager.Instance.GetOrCreatePlayer(joinRoomRequest.PlayerID, netPeer);
+                }
 
                 PlayerInfoInRoom playerInfoInRoom = new PlayerInfoInRoom();
                 playerInfoInRoom.PlayerID = player.ID;
@@ -72,28 +79,6 @@ namespace GameServer
                 data = MessagePackSerializer.Serialize(playerInfoInRoom);
 
                 room.AddPlayer(player);
-
-                JoinRoomResponse joinRoomResponse = new JoinRoomResponse();
-
-                joinRoomResponse.MasterID = room.MasterID;
-                joinRoomResponse.RoomID = room.RoomID;
-                joinRoomResponse.Others = new List<PlayerInfoInRoom>();
-
-                foreach (var item in room.Players)
-                {
-                    Player other = item.Value;
-                    PlayerInfoInRoom otherInfo = new PlayerInfoInRoom();
-                    otherInfo.PlayerID = other.ID;
-                    joinRoomResponse.Others.Add(otherInfo);
-                    if (other != player && other.NetPeer != null)
-                    {
-                        other.NetPeer.SendResponse(OperationCode.OnOtherJoinRoom, ReturnCode.Success, data, deliveryMethod);
-                    }
-                }
-
-                data = MessagePackSerializer.Serialize(joinRoomResponse);
-
-                netPeer.SendResponse(OperationCode.OnJoinRoom, ReturnCode.Success, data, deliveryMethod);
             }
             else
             {
@@ -111,23 +96,6 @@ namespace GameServer
             {
                 Room room = player.Room;
                 room.RemovePlayer(request.PlayerID);
-
-                PlayerInfoInRoom playerInfoInRoom = new PlayerInfoInRoom();
-                playerInfoInRoom.PlayerID = player.ID;
-
-                data = MessagePackSerializer.Serialize(playerInfoInRoom);
-
-                foreach (var item in room.Players)
-                {
-                    Player other = item.Value;
-
-                    if (other.NetPeer != null)
-                    {
-                        other.NetPeer.SendResponse(OperationCode.OnOtherLeaveRoom, ReturnCode.Success, data, deliveryMethod);
-                    }
-                }
-
-                netPeer.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, null, deliveryMethod);
             }
             else
             {
@@ -137,7 +105,7 @@ namespace GameServer
 
         private void OnSyncEvent(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
         {
-            SyncEventData eventData = MessagePackSerializer.Deserialize<SyncEventData>(data);
+            SyncEventRequest eventData = MessagePackSerializer.Deserialize<SyncEventRequest>(data);
 
             Player? player = PlayerManager.Instance.GetPlayer(eventData.PlayerID);
 

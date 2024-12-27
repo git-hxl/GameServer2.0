@@ -9,6 +9,7 @@ namespace GameServer.Protocol
     {
         public int RoomID { get; set; }
         public int PlayerID { get; set; }
+        public bool IsRobot { get; set; }
     }
 
     [MessagePackObject(true)]
