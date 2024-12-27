@@ -154,6 +154,7 @@ namespace GameServer
 
             joinRoomResponse.MasterID = MasterID;
             joinRoomResponse.RoomID = RoomID;
+            joinRoomResponse.PlayerID = player.ID;
             joinRoomResponse.Others = new List<PlayerInfoInRoom>();
 
             foreach (var item in Players)

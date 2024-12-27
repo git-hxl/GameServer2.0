@@ -105,9 +105,9 @@ namespace GameServer
 
         private void OnSyncEvent(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
         {
-            SyncEventRequest eventData = MessagePackSerializer.Deserialize<SyncEventRequest>(data);
+            //SyncEventRequest eventData = MessagePackSerializer.Deserialize<SyncEventRequest>(data);
 
-            Player? player = PlayerManager.Instance.GetPlayer(eventData.PlayerID);
+            Player? player = PlayerManager.Instance.GetPlayer(netPeer);
 
             if (player != null)
             {

@@ -17,6 +17,7 @@ namespace GameServer.Protocol
     {
         public int RoomID { get; set; }
         public int MasterID { get; set; }
+        public int PlayerID { get; set; }
         public List<PlayerInfoInRoom> Others { get; set; }
     }
 
