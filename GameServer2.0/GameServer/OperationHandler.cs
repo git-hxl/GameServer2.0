@@ -73,10 +73,10 @@ namespace GameServer
                     player = PlayerManager.Instance.GetOrCreatePlayer(joinRoomRequest.PlayerID, netPeer);
                 }
 
-                PlayerInfoInRoom playerInfoInRoom = new PlayerInfoInRoom();
-                playerInfoInRoom.PlayerID = player.ID;
+                PlayerInfo playerInfo = new PlayerInfo();
+                playerInfo.PlayerID = player.ID;
 
-                data = MessagePackSerializer.Serialize(playerInfoInRoom);
+                data = MessagePackSerializer.Serialize(playerInfo);
 
                 room.AddPlayer(player);
             }

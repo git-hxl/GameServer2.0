@@ -141,7 +141,7 @@ namespace Test
 
         private void OnOtherJoinRoom(byte[] data, DeliveryMethod deliveryMethod)
         {
-            PlayerInfoInRoom playerInfoInRoom = MessagePackSerializer.Deserialize<PlayerInfoInRoom>(data);
+            PlayerInfo playerInfoInRoom = MessagePackSerializer.Deserialize<PlayerInfo>(data);
         }
 
         private void OnLeaveRoom(byte[] data, DeliveryMethod deliveryMethod)
@@ -150,12 +150,12 @@ namespace Test
 
         private void OnOtherLeaveRoom(byte[] data, DeliveryMethod deliveryMethod)
         {
-            PlayerInfoInRoom playerInfoInRoom = MessagePackSerializer.Deserialize<PlayerInfoInRoom>(data);
+            PlayerInfo playerInfoInRoom = MessagePackSerializer.Deserialize<PlayerInfo>(data);
         }
 
         private void OnSyncEvent(byte[] data, DeliveryMethod deliveryMethod)
         {
-            SyncEventRequest syncEventData = MessagePackSerializer.Deserialize<SyncEventRequest>(data);
+            SyncRequest syncRequest = MessagePackSerializer.Deserialize<SyncRequest>(data);
         }
 
         protected override void OnInit()

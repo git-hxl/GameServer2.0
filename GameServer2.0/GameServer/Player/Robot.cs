@@ -66,18 +66,12 @@ namespace GameServer
 
         private void SyncTransfrom()
         {
-            SyncEventRequest syncEventRequest = new SyncEventRequest();
-            syncEventRequest.PlayerID = ID;
-            syncEventRequest.EventID = (ushort)EventCode.SyncTransform;
-
             SyncTransformData syncTransformData = new SyncTransformData();
             syncTransformData.Position = new UnityEngine.Vector3(Position.X, Position.Y, Position.Z);
             syncTransformData.Rotation = new UnityEngine.Quaternion(Rotation.X, Rotation.Y, Rotation.Z, Rotation.W);
             syncTransformData.Speed = Speed;
 
-            syncEventRequest.SyncData = MessagePack.MessagePackSerializer.Serialize(syncTransformData);
-
-            byte[] data = MessagePackSerializer.Serialize(syncEventRequest);
+            byte[] data = MessagePack.MessagePackSerializer.Serialize(syncTransformData);
 
             if (Room != null)
             {
@@ -86,7 +80,7 @@ namespace GameServer
                     Player player = item.Value;
                     if (player.NetPeer != null)
                     {
-                        player.NetPeer.SendResponse(OperationCode.SyncEvent, ReturnCode.Success, data, LiteNetLib.DeliveryMethod.Sequenced);
+                        player.NetPeer.SendSyncEvent(player.ID, SyncCode.SyncTransform, data, LiteNetLib.DeliveryMethod.Sequenced);
                     }
                 }
             }

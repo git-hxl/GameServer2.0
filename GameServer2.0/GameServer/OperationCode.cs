@@ -1,4 +1,4 @@
-﻿
+
 
 namespace GameServer
 {
@@ -18,10 +18,5 @@ namespace GameServer
         OnRoomClose,
 
         SyncEvent,
-    }
-
-    public enum EventCode : ushort
-    {
-        SyncTransform,
     }
 }

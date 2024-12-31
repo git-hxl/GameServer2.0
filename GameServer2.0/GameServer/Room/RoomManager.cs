@@ -14,7 +14,7 @@ namespace GameServer
         protected override void OnInit()
         {
             //throw new NotImplementedException();
-            Update();
+            StartUpdate();
         }
 
         public Room GetOrCreateRoom(int roomID)
@@ -46,7 +46,7 @@ namespace GameServer
             }
         }
 
-        public async void Update()
+        public async void StartUpdate()
         {
             try
             {

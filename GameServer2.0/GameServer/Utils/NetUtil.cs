@@ -1,7 +1,10 @@
 ﻿
 
+using GameServer.Protocol;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using MessagePack;
+using Utils;
 
 namespace GameServer.Utils
 {
@@ -20,5 +23,21 @@ namespace GameServer.Utils
 
             netPeer.Send(netDataWriter, deliveryMethod);
         }
+
+
+        public static void SendSyncEvent(this NetPeer netPeer, int playerID, SyncCode syncCode, byte[] data, DeliveryMethod deliveryMethod)
+        {
+            SyncRequest syncEventRequest = new SyncRequest();
+            syncEventRequest.PlayerID = playerID;
+            syncEventRequest.SyncCode = (ushort)syncCode;
+
+            syncEventRequest.SyncData = data;
+            syncEventRequest.Timestamp = DateTimeUtil.TimeStamp;
+
+            data = MessagePackSerializer.Serialize(syncEventRequest);
+
+            SendResponse(netPeer, OperationCode.SyncEvent, ReturnCode.Success, data, deliveryMethod);
+        }
+
     }
 }
