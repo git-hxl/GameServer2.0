@@ -21,25 +21,21 @@ namespace GameServer
                     throw new Exception("读取服务器配置文件失败！");
                 }
 
-                Server.Instance.InitConfig(serverConfig);
+                Server.DeltaTime = serverConfig.UpdateInterval / 1000f;
 
-                DateTime dateTime = DateTime.Now;
+                Server.Instance.InitConfig(serverConfig);
 
                 Server.Instance.Start();
 
                 while (true)
                 {
                     Thread.Sleep(serverConfig.UpdateInterval);
-
-                    TimeSpan deltaTime = DateTime.Now - dateTime;
-                    Server.Instance.Update((float)deltaTime.TotalSeconds);
-
-                    dateTime = DateTime.Now;
+                    Server.Instance.Update();
                 }
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error(ex.ToString());
             }
         }
     }

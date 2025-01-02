@@ -10,9 +10,9 @@ namespace GameServer
 
         private EventBasedNetListener? listener;
 
-        private ServerConfig? config;
-
         private OperationHandler? operationHandler;
+
+        public ServerConfig? Config { get; private set; }
 
         public static float DeltaTime { get; set; }
 
@@ -48,13 +48,13 @@ namespace GameServer
             netManager.ReconnectDelay = serverConfig.ReconnectDelay;
             netManager.MaxConnectAttempts = serverConfig.MaxConnectAttempts;
 
-            config = serverConfig;
+            Config = serverConfig;
         }
 
 
         public void Start()
         {
-            if (config == null)
+            if (Config == null)
             {
                 return;
             }
@@ -63,18 +63,18 @@ namespace GameServer
                 return;
             }
 
-            netManager.Start(config.Port);
+            netManager.Start(Config.Port);
             Log.Information("start server:{0}", netManager.LocalPort);
+
+            RoomManager.Instance.GetOrCreateRoom(1);
         }
 
-        public void Update(float deltaTime)
+        public void Update()
         {
             if (netManager != null)
             {
                 netManager.PollEvents();
             }
-
-            DeltaTime = deltaTime;
         }
 
         /// <summary>
@@ -85,9 +85,9 @@ namespace GameServer
         {
             Log.Information("OnConnectionRequest {0}", request.RemoteEndPoint.ToString());
 
-            if (config == null)
+            if (Config == null)
                 return;
-            request.AcceptIfKey(config.ConnectKey);
+            request.AcceptIfKey(Config.ConnectKey);
         }
 
         /// <summary>

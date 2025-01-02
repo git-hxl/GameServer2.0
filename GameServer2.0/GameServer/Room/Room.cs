@@ -30,6 +30,11 @@ namespace GameServer
             InactiveTime = 0;
         }
 
+        public virtual void OnCreateRoom()
+        {
+            Log.Information("OnCreateRoom RoomID:{0}", RoomID);
+        }
+
         public bool AddPlayer(Player player)
         {
             if (Players.TryAdd(player.ID, player))
@@ -73,7 +78,7 @@ namespace GameServer
         {
             Log.Information("OnCloseRoom RoomID:{0}", RoomID);
 
-            SendToAll(OperationCode.OnRoomClose, ReturnCode.Success, null);
+            this.SendToAll(OperationCode.OnRoomClose, ReturnCode.Success, null);
 
             foreach (var item in Players)
             {
@@ -115,40 +120,8 @@ namespace GameServer
             }
         }
 
-        public void SendToPlayer(Player player, OperationCode code, ReturnCode returnCode, byte[]? data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
-        {
-            if (player.NetPeer != null)
-            {
-                player.NetPeer.SendResponse(code, returnCode, data, deliveryMethod);
-            }
-        }
 
-        public void SendToOthers(Player self, OperationCode code, ReturnCode returnCode, byte[]? data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
-        {
-            foreach (var item in Players)
-            {
-                Player player = item.Value;
-                if (player.NetPeer != null && player != self)
-                {
-                    player.NetPeer.SendResponse(code, returnCode, data, deliveryMethod);
-                }
-            }
-        }
-
-        public void SendToAll(OperationCode code, ReturnCode returnCode, byte[]? data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
-        {
-            foreach (var item in Players)
-            {
-                Player player = item.Value;
-                if (player.NetPeer != null)
-                {
-                    player.NetPeer.SendResponse(code, returnCode, data, deliveryMethod);
-                }
-            }
-        }
-
-
-        public void OnPlayerJoin(Player player)
+        private void OnPlayerJoin(Player player)
         {
             JoinRoomResponse joinRoomResponse = new JoinRoomResponse();
 
@@ -168,24 +141,30 @@ namespace GameServer
 
             byte[] data = MessagePackSerializer.Serialize(joinRoomResponse);
 
-            SendToPlayer(player, OperationCode.OnJoinRoom, ReturnCode.Success, data);
+            if (player.NetPeer != null)
+            {
+                player.NetPeer.SendResponse(OperationCode.OnJoinRoom, ReturnCode.Success, data, DeliveryMethod.ReliableOrdered);
+            }
 
             PlayerInfo playerInfo = new PlayerInfo();
             playerInfo.PlayerID = player.ID;
 
             data = MessagePackSerializer.Serialize(playerInfo);
 
-            SendToOthers(player, OperationCode.OnOtherJoinRoom, ReturnCode.Success, data);
+            this.SendToOthers(player, OperationCode.OnOtherJoinRoom, ReturnCode.Success, data);
         }
 
-        public void OnPlayerExit(Player player)
+        private void OnPlayerExit(Player player)
         {
-            SendToPlayer(player, OperationCode.OnLeaveRoom, ReturnCode.Success, null);
+            if (player.NetPeer != null)
+            {
+                player.NetPeer.SendResponse(OperationCode.OnLeaveRoom, ReturnCode.Success, null, DeliveryMethod.ReliableOrdered);
+            }
 
             PlayerInfo playerInfo = GetPlayerInfo(player);
             byte[] data = MessagePackSerializer.Serialize(playerInfo);
 
-            SendToOthers(player, OperationCode.OnOtherJoinRoom, ReturnCode.Success, data);
+            this.SendToOthers(player, OperationCode.OnOtherJoinRoom, ReturnCode.Success, data);
         }
 
         public PlayerInfo GetPlayerInfo(Player player)

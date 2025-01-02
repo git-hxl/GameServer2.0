@@ -23,8 +23,21 @@ namespace GameServer
 
             if (room == null)
             {
-                room = ReferencePool.Instance.Acquire<Room>();
+                switch (roomID)
+                {
+                    case 1:
+                        room = ReferencePool.Instance.Acquire<TestRoom>();
+
+                        break;
+                    default:
+
+                        room = ReferencePool.Instance.Acquire<Room>();
+
+                        break;
+                }
+
                 room.Init(roomID);
+                room.OnCreateRoom();
                 rooms.TryAdd(roomID, room);
             }
             return room;
@@ -55,26 +68,32 @@ namespace GameServer
                 while (true)
                 {
                     await Task.Delay((int)(Server.DeltaTime * 1000), updateTokenSource.Token);
-
-                    foreach (var item in rooms)
+                    try
                     {
-                        Room room = item.Value;
-                        if (room == null || room.Inactived)
+                        foreach (var item in rooms)
                         {
-                            clearRoomIDs.Add(item.Key);
+                            Room room = item.Value;
+                            if (room == null || room.Inactived)
+                            {
+                                clearRoomIDs.Add(item.Key);
+                            }
+                            else
+                            {
+                                room.Update();
+                            }
                         }
-                        else
-                        {
-                            room.Update();
-                        }
-                    }
 
-                    foreach (var item in clearRoomIDs)
+                        foreach (var item in clearRoomIDs)
+                        {
+                            CloseRoom(item);
+                        }
+
+                        clearRoomIDs.Clear();
+                    }
+                    catch (Exception ex)
                     {
-                        CloseRoom(item);
+                        Log.Error(ex.ToString());
                     }
-
-                    clearRoomIDs.Clear();
                 }
             }
             catch (Exception ex)

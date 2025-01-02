@@ -64,7 +64,7 @@ namespace GameServer
 
             if (player == null)
             {
-                if(joinRoomRequest.IsRobot)
+                if (joinRoomRequest.IsRobot)
                 {
                     player = PlayerManager.Instance.GetOrCreateRobot(joinRoomRequest.PlayerID);
                 }
@@ -114,15 +114,7 @@ namespace GameServer
                 Room? room = player.Room;
                 if (room != null)
                 {
-                    foreach (var item in room.Players)
-                    {
-                        player = item.Value;
-
-                        if (player.NetPeer != null)
-                        {
-                            player.NetPeer.SendResponse(OperationCode.SyncEvent, ReturnCode.Success, data, deliveryMethod);
-                        }
-                    }
+                    room.SendToAll(OperationCode.SyncEvent, ReturnCode.Success, data, deliveryMethod);
                 }
             }
         }
