@@ -6,16 +6,12 @@ namespace GameServer
     {
         Login = 0,
         Register,
-
         JoinRoom,
-        OnJoinRoom,
-        OnOtherJoinRoom,
-
         LeaveRoom,
-        OnLeaveRoom,
-        OnOtherLeaveRoom,
+        CloseRoom,
 
-        OnRoomClose,
+        UpdateRoomInfo,
+        UpdatePlayerInfo,
 
         SyncEvent,
     }

@@ -4,7 +4,7 @@ using Utils;
 
 namespace GameServer
 {
-    public class TestRoom : Room
+    public class TestRoom : OLDRoom
     {
         public override void Init(int roomID)
         {
@@ -25,7 +25,7 @@ namespace GameServer
         {
             for (int i = 0; i < count; i++)
             {
-                Robot robot = PlayerManager.Instance.GetOrCreateRobot(i - 9999);
+                TestRobot robot = OLDPlayerManager.Instance.GetOrCreateRobot(i - 9999);
                 AddPlayer(robot);
             }
         }

@@ -2,17 +2,18 @@
 
 using GameServer.Utils;
 using LiteNetLib;
+using System.Numerics;
 
 namespace GameServer
 {
     public static class RoomEx
     {
 
-        public static void SendToOthers(this Room room, Player self, OperationCode code, ReturnCode returnCode, byte[]? data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
+        public static void SendToOthers(this OLDRoom room, OLDPlayer self, OperationCode code, ReturnCode returnCode, byte[]? data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
         {
             foreach (var item in room.Players)
             {
-                Player player = item.Value;
+                OLDPlayer player = item.Value;
                 if (player.NetPeer != null && player != self)
                 {
                     player.NetPeer.SendResponse(code, returnCode, data, deliveryMethod);
@@ -20,11 +21,11 @@ namespace GameServer
             }
         }
 
-        public static void SendToOthersSyncEvent(this Room room, Player self, SyncCode code, byte[] data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
+        public static void SendToOthersSyncEvent(this OLDRoom room, OLDPlayer self, SyncCode code, byte[] data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
         {
             foreach (var item in room.Players)
             {
-                Player player = item.Value;
+                OLDPlayer player = item.Value;
                 if (player.NetPeer != null && player != self)
                 {
                     player.NetPeer.SendSyncEvent(self.ID, code, data, deliveryMethod);
@@ -32,11 +33,11 @@ namespace GameServer
             }
         }
 
-        public static void SendToAll(this Room room, OperationCode code, ReturnCode returnCode, byte[]? data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
+        public static void SendToAll(this OLDRoom room, OperationCode code, ReturnCode returnCode, byte[]? data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
         {
             foreach (var item in room.Players)
             {
-                Player player = item.Value;
+                OLDPlayer player = item.Value;
                 if (player.NetPeer != null)
                 {
                     player.NetPeer.SendResponse(code, returnCode, data, deliveryMethod);
@@ -44,16 +45,32 @@ namespace GameServer
             }
         }
 
-        public static void SendToAllSyncEvent(this Room room, Player self, SyncCode code, byte[] data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
+        public static void SendToAllSyncEvent(this OLDRoom room, OLDPlayer self, SyncCode code, byte[] data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
         {
             foreach (var item in room.Players)
             {
-                Player player = item.Value;
-                if (player.NetPeer != null)
+                OLDPlayer player = item.Value;
+                if (player.NetPeer != null && IsInAOI(self, player))
                 {
                     player.NetPeer.SendSyncEvent(self.ID, code, data, deliveryMethod);
                 }
             }
+        }
+
+
+        public static bool IsInAOI(OLDPlayer self, OLDPlayer other)
+        {
+            Vector3 posSelf = self.Position;
+            Vector3 posOther = other.Position;
+
+            float rangle = 5;
+
+            if (posOther.Z < posSelf.Z + rangle && posOther.Z > posSelf.Z - rangle && posOther.X < posSelf.X + rangle && posOther.X > posSelf.X - rangle)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

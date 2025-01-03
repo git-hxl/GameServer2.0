@@ -65,8 +65,6 @@ namespace GameServer
 
             netManager.Start(Config.Port);
             Log.Information("start server:{0}", netManager.LocalPort);
-
-            RoomManager.Instance.GetOrCreateRoom(1);
         }
 
         public void Update()
@@ -75,6 +73,7 @@ namespace GameServer
             {
                 netManager.PollEvents();
             }
+            RoomManager.Instance.Update();
         }
 
         /// <summary>
@@ -134,11 +133,11 @@ namespace GameServer
         {
             Log.Information("OnPeerDisconnected {0}", peer.ToString());
 
-            Player? player = PlayerManager.Instance.GetPlayer(peer);
+            OLDPlayer? player = OLDPlayerManager.Instance.GetPlayer(peer);
 
             if (player != null)
             {
-                PlayerManager.Instance.RemovePlayer(player.ID);
+                OLDPlayerManager.Instance.RemovePlayer(player.ID);
             }
         }
     }

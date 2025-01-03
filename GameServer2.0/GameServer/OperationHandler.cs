@@ -21,16 +21,12 @@ namespace GameServer
                 case OperationCode.JoinRoom:
                     OnJoinRoom(peer, data, deliveryMethod);
                     break;
-                case OperationCode.OnJoinRoom:
-                    break;
-                case OperationCode.OnOtherJoinRoom:
-                    break;
                 case OperationCode.LeaveRoom:
                     OnLeaveRoom(peer, data, deliveryMethod);
                     break;
-                case OperationCode.OnLeaveRoom:
+                case OperationCode.UpdateRoomInfo:
                     break;
-                case OperationCode.OnOtherLeaveRoom:
+                case OperationCode.UpdatePlayerInfo:
                     break;
                 case OperationCode.SyncEvent:
                     OnSyncEvent(peer, data, deliveryMethod);
@@ -58,19 +54,19 @@ namespace GameServer
         {
             JoinRoomRequest joinRoomRequest = MessagePackSerializer.Deserialize<JoinRoomRequest>(data);
 
-            Room room = RoomManager.Instance.GetOrCreateRoom(joinRoomRequest.RoomID);
+            OLDRoom room = RoomManager.Instance.GetOrCreateRoom(joinRoomRequest.RoomID);
 
-            Player? player = room.GetPlayer(joinRoomRequest.PlayerID);
+            OLDPlayer? player = room.GetPlayer(joinRoomRequest.PlayerID);
 
             if (player == null)
             {
                 if (joinRoomRequest.IsRobot)
                 {
-                    player = PlayerManager.Instance.GetOrCreateRobot(joinRoomRequest.PlayerID);
+                    player = OLDPlayerManager.Instance.GetOrCreateRobot(joinRoomRequest.PlayerID);
                 }
                 else
                 {
-                    player = PlayerManager.Instance.GetOrCreatePlayer(joinRoomRequest.PlayerID, netPeer);
+                    player = OLDPlayerManager.Instance.GetOrCreatePlayer(joinRoomRequest.PlayerID, netPeer);
                 }
 
                 PlayerInfo playerInfo = new PlayerInfo();
@@ -90,11 +86,11 @@ namespace GameServer
         {
             LeaveRoomRequest request = MessagePackSerializer.Deserialize<LeaveRoomRequest>(data);
 
-            Player? player = PlayerManager.Instance.GetPlayer(request.PlayerID);
+            OLDPlayer? player = OLDPlayerManager.Instance.GetPlayer(request.PlayerID);
 
             if (player != null && player.Room != null)
             {
-                Room room = player.Room;
+                OLDRoom room = player.Room;
                 room.RemovePlayer(request.PlayerID);
             }
             else
@@ -107,11 +103,11 @@ namespace GameServer
         {
             //SyncEventRequest eventData = MessagePackSerializer.Deserialize<SyncEventRequest>(data);
 
-            Player? player = PlayerManager.Instance.GetPlayer(netPeer);
+            OLDPlayer? player = OLDPlayerManager.Instance.GetPlayer(netPeer);
 
             if (player != null)
             {
-                Room? room = player.Room;
+                OLDRoom? room = player.Room;
                 if (room != null)
                 {
                     room.SendToAll(OperationCode.SyncEvent, ReturnCode.Success, data, deliveryMethod);

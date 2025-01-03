@@ -8,20 +8,29 @@ namespace GameServer
 {
     public class RoomManager : Singleton<RoomManager>
     {
-        private ConcurrentDictionary<int, Room> rooms = new ConcurrentDictionary<int, Room>();
+        private ConcurrentDictionary<int, OLDRoom> rooms = new ConcurrentDictionary<int, OLDRoom>();
 
-        private CancellationTokenSource? updateTokenSource;
         protected override void OnInit()
         {
             //throw new NotImplementedException();
-            StartUpdate();
+
+            GetOrCreateRoom(1);
+
+            GetOrCreateRoom(2);
+
+            Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+
+                CloseRoom(1);
+            });
         }
 
-        public Room GetOrCreateRoom(int roomID)
+        public OLDRoom GetOrCreateRoom(int roomID)
         {
-            Room? room = GetRoom(roomID);
+            OLDRoom? room = GetRoom(roomID);
 
-            if (room == null)
+            if (room == null || room.Inactived)
             {
                 switch (roomID)
                 {
@@ -31,7 +40,7 @@ namespace GameServer
                         break;
                     default:
 
-                        room = ReferencePool.Instance.Acquire<Room>();
+                        room = ReferencePool.Instance.Acquire<OLDRoom>();
 
                         break;
                 }
@@ -43,62 +52,19 @@ namespace GameServer
             return room;
         }
 
-        public Room? GetRoom(int roomID)
+        public OLDRoom? GetRoom(int roomID)
         {
-            rooms.TryGetValue(roomID, out Room? room);
+            rooms.TryGetValue(roomID, out OLDRoom? room);
             return room;
         }
 
         public void CloseRoom(int roomID)
         {
-            Room? room;
+            OLDRoom? room;
             if (rooms.TryRemove(roomID, out room))
             {
                 room.OnCloseRoom();
                 ReferencePool.Instance.Release(room);
-            }
-        }
-
-        public async void StartUpdate()
-        {
-            try
-            {
-                updateTokenSource = new CancellationTokenSource();
-                List<int> clearRoomIDs = new List<int>();
-                while (true)
-                {
-                    await Task.Delay((int)(Server.DeltaTime * 1000), updateTokenSource.Token);
-                    try
-                    {
-                        foreach (var item in rooms)
-                        {
-                            Room room = item.Value;
-                            if (room == null || room.Inactived)
-                            {
-                                clearRoomIDs.Add(item.Key);
-                            }
-                            else
-                            {
-                                room.Update();
-                            }
-                        }
-
-                        foreach (var item in clearRoomIDs)
-                        {
-                            CloseRoom(item);
-                        }
-
-                        clearRoomIDs.Clear();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex.ToString());
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex.ToString());
             }
         }
 
@@ -108,7 +74,7 @@ namespace GameServer
 
             foreach (var item in rooms)
             {
-                Room room = item.Value;
+                OLDRoom room = item.Value;
                 if (room != null)
                 {
                     room.OnCloseRoom();
@@ -117,6 +83,24 @@ namespace GameServer
             }
 
             rooms.Clear();
+        }
+
+        public void Update()
+        {
+            var inactiveRooms = new List<int>();
+
+            foreach (var item in rooms)
+            {
+                if (item.Value.Inactived)
+                {
+                    inactiveRooms.Add(item.Key);
+                }
+            }
+
+            for (int i = 0; i < inactiveRooms.Count; i++)
+            {
+                CloseRoom(inactiveRooms[i]);
+            }
         }
     }
 }

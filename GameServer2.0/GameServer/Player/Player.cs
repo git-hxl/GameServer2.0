@@ -1,38 +1,45 @@
-﻿using GameServer.Protocol;
-using GameServer.Utils;
-using LiteNetLib;
-using MessagePack;
+﻿
 using Serilog;
-using Utils;
-
 
 namespace GameServer
 {
-    public class Player : IReference
+    public class Player : IPlayer
     {
-        public int ID { get; protected set; }
+        public int ID { get; private set; }
 
-        public NetPeer? NetPeer { get; protected set; }
+        public IRoom? Room { get; private set; }
 
-        public Room? Room { get; protected set; }
+        public void Init(int id)
+        {
+            ID = id;
+        }
 
         public void OnAcquire()
         {
-            //throw new NotImplementedException();
+
         }
 
-        public virtual void Init(int id, NetPeer? netPeer)
+        public virtual void OnJoinRoom(IRoom room)
         {
-            ID = id;
-            NetPeer = netPeer;
+            if (Room != null)
+            {
+                Room.OnJoinPlayer(this);
+            }
+
+            Room = room;
+
+            Log.Information("OnJoinRoom PlayerID {0} RoomID {1}", ID, Room.ID);
         }
 
-        public void OnRelease()
+        public virtual void OnLeaveRoom()
         {
-            //throw new NotImplementedException();
+            if (Room != null)
+            {
+                Log.Information("OnLeaveRoom PlayerID {0} RoomID {1}", ID, Room.ID);
 
-            ID = -1;
-            NetPeer = null;
+                Room.OnLeavePlayer(this);
+                Room = null;
+            }
         }
 
         public virtual void OnUpdate()
@@ -40,28 +47,10 @@ namespace GameServer
 
         }
 
-
-        public virtual void OnJoinRoom(Room room)
+        public void OnRelease()
         {
-            if (Room != null)
-            {
-                if (Room != room)
-                {
-                    Room.RemovePlayer(ID);
-                }
-            }
-            Room = room;
-
-            Log.Information("OnJoinRoom ID:{0} RoomID:{1}", ID, Room.RoomID);
-        }
-
-        public virtual void OnExitRoom()
-        {
-            if (Room != null)
-            {
-                Log.Information("OnExitRoom ID:{0} RoomID:{1}", ID, Room.RoomID);
-                Room = null;
-            }
+            ID = -1;
+            Room = null;
         }
     }
 }

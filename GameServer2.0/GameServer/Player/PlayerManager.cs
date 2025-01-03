@@ -1,83 +1,46 @@
 ﻿
-using LiteNetLib;
 using System.Collections.Concurrent;
 using Utils;
 
 namespace GameServer
 {
-    public class PlayerManager : Singleton<PlayerManager>
+    public class PlayerManager : IPlayerManager
     {
-        public ConcurrentDictionary<int, Player> Players { get; } = new ConcurrentDictionary<int, Player>();
+        public ConcurrentDictionary<int, IPlayer> Players { get; private set; } = new ConcurrentDictionary<int, IPlayer>();
 
-        protected override void OnDispose()
+        public IPlayer CreatePlayer(int id)
         {
-            //throw new NotImplementedException();
-            foreach (var item in Players)
+            IPlayer? player;
+            if (Players.TryGetValue(id, out player))
             {
-                ReferencePool.Instance.Release(item.Value);
+                return player;
             }
 
-            Players.Clear();
-        }
+            player = ReferencePool.Instance.Acquire<Player>();
 
-        protected override void OnInit()
-        {
-            //throw new NotImplementedException();
-        }
-
-        public Player GetOrCreatePlayer(int id, NetPeer netPeer)
-        {
-            Player? player = GetPlayer(id);
-            if (player == null)
+            if (Players.TryAdd(id, player))
             {
-                player = ReferencePool.Instance.Acquire<Player>();
-
-                player.Init(id, netPeer);
-
-                Players.TryAdd(id, player);
+                player.Init(id);
             }
 
             return player;
         }
 
-        public Robot GetOrCreateRobot(int id)
+        public IPlayer? GetPlayer(int id)
         {
-            Robot? robot = GetPlayer(id) as Robot;
-            if (robot == null)
+            IPlayer? player;
+            if (Players.TryGetValue(id, out player))
             {
-                robot = ReferencePool.Instance.Acquire<Robot>();
-
-                robot.Init(id, null);
-
-                Players.TryAdd(id, robot);
+                return player;
             }
-
-            return robot;
-        }
-
-
-        public Player? GetPlayer(int id)
-        {
-            Player? player;
-            Players.TryGetValue(id, out player);
-            return player;
-        }
-
-        public Player? GetPlayer(NetPeer netPeer)
-        {
-            return Players.Values.FirstOrDefault((a) => a.NetPeer == netPeer);
+            return null;
         }
 
         public void RemovePlayer(int id)
         {
-            if (Players.TryRemove(id, out Player? player))
+            IPlayer? player;
+            if (Players.TryRemove(id, out player))
             {
-                Room? room = player.Room;
-                if (room != null)
-                {
-                    room.RemovePlayer(id);
-                }
-
                 ReferencePool.Instance.Release(player);
             }
         }

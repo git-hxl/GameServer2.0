@@ -21,11 +21,4 @@ namespace GameServer.Protocol
         public int PlayerID { get; set; }
         public List<PlayerInfo> Others { get; set; }
     }
-
-    [MessagePackObject(true)]
-    public class PlayerInfo
-    {
-        public int PlayerID { get; set; }
-        public string PlayerName { get; set; }
-    }
 }
