@@ -1,19 +1,21 @@
 ﻿
-
 using MessagePack;
 
 namespace GameServer.Protocol
 {
     [MessagePackObject(true)]
-    public class LeaveRoomRequest
+    public class CreateRoomRequest
     {
         public int PlayerID {  get; set; }
+
+        public RoomInfo RoomInfo { get; set; }
     }
 
     [MessagePackObject(true)]
-    public class LeaveRoomResponse
+    public class CreateRoomResponse
     {
         public int PlayerID { get; set; }
-        public RoomInfo? RoomInfo { get; set; }
+
+        public RoomInfo RoomInfo { get; set; }
     }
 }

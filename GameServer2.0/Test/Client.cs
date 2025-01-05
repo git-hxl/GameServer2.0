@@ -96,22 +96,12 @@ namespace Test
                 case OperationCode.Register:
                     break;
                 case OperationCode.JoinRoom:
-                    break;
-                case OperationCode.OnJoinRoom:
                     OnJoinRoom(data, deliveryMethod);
-
-                    break;
-                case OperationCode.OnOtherJoinRoom:
-                    OnOtherJoinRoom(data, deliveryMethod);
                     break;
                 case OperationCode.LeaveRoom:
-                    break;
-                case OperationCode.OnLeaveRoom:
                     OnLeaveRoom(data, deliveryMethod);
                     break;
-                case OperationCode.OnOtherLeaveRoom:
-                    OnOtherLeaveRoom(data, deliveryMethod);
-                    break;
+               
                 case OperationCode.SyncEvent:
                     break;
                 default:
@@ -155,7 +145,7 @@ namespace Test
 
         private void OnSyncEvent(byte[] data, DeliveryMethod deliveryMethod)
         {
-            SyncRequest syncRequest = MessagePackSerializer.Deserialize<SyncRequest>(data);
+            SyncEventRequest syncRequest = MessagePackSerializer.Deserialize<SyncEventRequest>(data);
         }
 
         protected override void OnInit()

@@ -1,106 +1,61 @@
 ﻿
-
 using Serilog;
 using System.Collections.Concurrent;
 using Utils;
 
 namespace GameServer
 {
-    public class RoomManager : Singleton<RoomManager>
+    public class RoomManager : Singleton<RoomManager>, IRoomManager
     {
-        private ConcurrentDictionary<int, OLDRoom> rooms = new ConcurrentDictionary<int, OLDRoom>();
+        public ConcurrentDictionary<int, IRoom> Rooms { get; } = new ConcurrentDictionary<int, IRoom>();
 
-        protected override void OnInit()
+        public void CloseRoom(int roomId)
         {
-            //throw new NotImplementedException();
-
-            GetOrCreateRoom(1);
-
-            GetOrCreateRoom(2);
-
-            Task.Run(async () =>
-            {
-                await Task.Delay(1000);
-
-                CloseRoom(1);
-            });
-        }
-
-        public OLDRoom GetOrCreateRoom(int roomID)
-        {
-            OLDRoom? room = GetRoom(roomID);
-
-            if (room == null || room.Inactived)
-            {
-                switch (roomID)
-                {
-                    case 1:
-                        room = ReferencePool.Instance.Acquire<TestRoom>();
-
-                        break;
-                    default:
-
-                        room = ReferencePool.Instance.Acquire<OLDRoom>();
-
-                        break;
-                }
-
-                room.Init(roomID);
-                room.OnCreateRoom();
-                rooms.TryAdd(roomID, room);
-            }
-            return room;
-        }
-
-        public OLDRoom? GetRoom(int roomID)
-        {
-            rooms.TryGetValue(roomID, out OLDRoom? room);
-            return room;
-        }
-
-        public void CloseRoom(int roomID)
-        {
-            OLDRoom? room;
-            if (rooms.TryRemove(roomID, out room))
+            IRoom? room;
+            if (Rooms.TryRemove(roomId, out room))
             {
                 room.OnCloseRoom();
+
                 ReferencePool.Instance.Release(room);
             }
+        }
+
+        public T? CreateRoom<T>(int roomId) where T : IRoom, new()
+        {
+            IRoom room = ReferencePool.Instance.Acquire<T>();
+
+            if (Rooms.TryAdd(roomId, room))
+            {
+                room.OnInit(roomId);
+
+                return (T)room;
+            }
+
+            ReferencePool.Instance.Release(room);
+
+            Log.Information("CreateRoom Failed,RoomID {0} is existed!", roomId);
+
+            return default(T);
+        }
+
+        public IRoom? GetRoom(int roomId)
+        {
+            IRoom? room;
+            if (Rooms.TryGetValue(roomId, out room))
+            {
+                return room;
+            }
+            return null;
         }
 
         protected override void OnDispose()
         {
             //throw new NotImplementedException();
-
-            foreach (var item in rooms)
-            {
-                OLDRoom room = item.Value;
-                if (room != null)
-                {
-                    room.OnCloseRoom();
-                    ReferencePool.Instance.Release(room);
-                }
-            }
-
-            rooms.Clear();
         }
 
-        public void Update()
+        protected override void OnInit()
         {
-            var inactiveRooms = new List<int>();
-
-            foreach (var item in rooms)
-            {
-                if (item.Value.Inactived)
-                {
-                    inactiveRooms.Add(item.Key);
-                }
-            }
-
-            for (int i = 0; i < inactiveRooms.Count; i++)
-            {
-                CloseRoom(inactiveRooms[i]);
-            }
+            //throw new NotImplementedException();
         }
     }
 }

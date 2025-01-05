@@ -7,8 +7,8 @@ namespace GameServer
     {
         ConcurrentDictionary<int, IRoom> Rooms { get; }
 
-        IRoom CreateRoom(int roomId); 
-        IRoom GetRoom(int roomId);
+        T? CreateRoom<T>(int roomId) where T : IRoom, new();
+        IRoom? GetRoom(int roomId);
         void CloseRoom(int roomId);
     }
 }

@@ -1,4 +1,6 @@
 ﻿
+using GameServer.Protocol;
+using LiteNetLib;
 using Serilog;
 
 namespace GameServer
@@ -9,9 +11,15 @@ namespace GameServer
 
         public IRoom? Room { get; private set; }
 
-        public void Init(int id)
+        public PlayerInfo? PlayerInfo { get; private set; }
+
+        public NetPeer? NetPeer { get; private set; }
+
+        public void OnInit(int id, NetPeer? netPeer)
         {
             ID = id;
+
+            NetPeer = netPeer;
         }
 
         public void OnAcquire()
@@ -23,7 +31,7 @@ namespace GameServer
         {
             if (Room != null)
             {
-                Room.OnJoinPlayer(this);
+                Room.OnLeavePlayer(this);
             }
 
             Room = room;
@@ -36,15 +44,21 @@ namespace GameServer
             if (Room != null)
             {
                 Log.Information("OnLeaveRoom PlayerID {0} RoomID {1}", ID, Room.ID);
-
-                Room.OnLeavePlayer(this);
                 Room = null;
             }
         }
 
+        public virtual void OnUpdatePlayerInfo(PlayerInfo playerInfo)
+        {
+            PlayerInfo = playerInfo;
+        }
+
+        /// <summary>
+        /// 每帧调用
+        /// </summary>
         public virtual void OnUpdate()
         {
-
+             
         }
 
         public void OnRelease()

@@ -32,7 +32,7 @@ namespace Utils
             }
         }
 
-        public T Acquire<T>() where T : class, IReference, new()
+        public T Acquire<T>() where T : IReference, new()
         {
             return GetReferenceCollection(typeof(T)).Acquire<T>();
         }
@@ -40,15 +40,15 @@ namespace Utils
         {
             GetReferenceCollection(reference.GetType()).Release(reference);
         }
-        public void Add<T>(int count) where T : class, IReference, new()
+        public void Add<T>(int count) where T : IReference, new()
         {
             GetReferenceCollection(typeof(T)).Add<T>(count);
         }
-        public void Remove<T>(int count) where T : class, IReference, new()
+        public void Remove<T>(int count) where T : IReference, new()
         {
             GetReferenceCollection(typeof(T)).Remove(count);
         }
-        public void RemoveAll<T>() where T : class, IReference, new()
+        public void RemoveAll<T>() where T : IReference, new()
         {
             GetReferenceCollection(typeof(T)).RemoveAll();
         }

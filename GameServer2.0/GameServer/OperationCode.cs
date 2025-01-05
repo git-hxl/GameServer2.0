@@ -6,6 +6,7 @@ namespace GameServer
     {
         Login = 0,
         Register,
+        CreateRoom,
         JoinRoom,
         LeaveRoom,
         CloseRoom,

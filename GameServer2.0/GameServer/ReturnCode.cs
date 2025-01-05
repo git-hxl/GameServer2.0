@@ -6,6 +6,7 @@ namespace GameServer
     {
         Success = 0,
 
+        CreateRoomFail,
         JoinRoomFail,
 
         LeaveRoomFail,

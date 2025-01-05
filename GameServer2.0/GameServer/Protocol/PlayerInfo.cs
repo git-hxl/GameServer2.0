@@ -1,7 +1,6 @@
 
 
 using MessagePack;
-using System.Collections.Generic;
 
 namespace GameServer.Protocol
 {
@@ -10,5 +9,6 @@ namespace GameServer.Protocol
     {
         public int PlayerID { get; set; }
         public string PlayerName { get; set; }
+        public bool IsRobot { get; set; }
     }
 }

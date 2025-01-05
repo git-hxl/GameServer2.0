@@ -73,7 +73,6 @@ namespace GameServer
             {
                 netManager.PollEvents();
             }
-            RoomManager.Instance.Update();
         }
 
         /// <summary>
@@ -133,12 +132,12 @@ namespace GameServer
         {
             Log.Information("OnPeerDisconnected {0}", peer.ToString());
 
-            OLDPlayer? player = OLDPlayerManager.Instance.GetPlayer(peer);
+            //var player = PlayerManager.Instance.GetPlayer(peer);
 
-            if (player != null)
-            {
-                OLDPlayerManager.Instance.RemovePlayer(player.ID);
-            }
+            //if (player != null)
+            //{
+            //    PlayerManager.Instance.RemovePlayer(player.ID);
+            //}
         }
     }
 }

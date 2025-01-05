@@ -18,11 +18,18 @@ namespace GameServer
                 case OperationCode.Register:
                     OnRegister(peer, data, deliveryMethod);
                     break;
+
+                case OperationCode.CreateRoom:
+                    OnCreateRoom(peer, data, deliveryMethod);
+                    break;
                 case OperationCode.JoinRoom:
                     OnJoinRoom(peer, data, deliveryMethod);
                     break;
                 case OperationCode.LeaveRoom:
                     OnLeaveRoom(peer, data, deliveryMethod);
+                    break;
+                case OperationCode.CloseRoom:
+                    OnCloseRoom(peer, data, deliveryMethod);
                     break;
                 case OperationCode.UpdateRoomInfo:
                     break;
@@ -50,48 +57,88 @@ namespace GameServer
             netPeer.SendResponse(OperationCode.Login, ReturnCode.Success, null, deliveryMethod);
         }
 
+
+        private void OnCreateRoom(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
+        {
+            CreateRoomRequest createRoomRequest = MessagePackSerializer.Deserialize<CreateRoomRequest>(data);
+
+            RoomInfo roomInfo = createRoomRequest.RoomInfo;
+
+            IRoom? room = RoomManager.Instance.GetRoom(roomInfo.RoomID);
+
+            if (room != null)
+            {
+                netPeer.SendResponse(OperationCode.CreateRoom, ReturnCode.CreateRoomFail, null, deliveryMethod);
+                return;
+            }
+
+            room = RoomManager.Instance.CreateRoom<Room>(roomInfo.RoomID);
+
+            if (room != null)
+            {
+                room.OnUpdateRoomInfo(roomInfo);
+            }
+
+            CreateRoomResponse createRoomResponse = new CreateRoomResponse();
+            createRoomResponse.PlayerID = createRoomRequest.PlayerID;
+
+            createRoomResponse.RoomInfo = roomInfo;
+
+            data = MessagePack.MessagePackSerializer.Serialize(createRoomResponse);
+
+            netPeer.SendResponse(OperationCode.CreateRoom, ReturnCode.Success, data, deliveryMethod);
+
+        }
+
         private void OnJoinRoom(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
         {
-            JoinRoomRequest joinRoomRequest = MessagePackSerializer.Deserialize<JoinRoomRequest>(data);
+            JoinRoomRequest request = MessagePackSerializer.Deserialize<JoinRoomRequest>(data);
+            PlayerInfo? playerInfo = request.PlayeInfo;
+            IRoom? room = RoomManager.Instance.GetRoom(request.RoomID);
 
-            OLDRoom room = RoomManager.Instance.GetOrCreateRoom(joinRoomRequest.RoomID);
-
-            OLDPlayer? player = room.GetPlayer(joinRoomRequest.PlayerID);
-
-            if (player == null)
+            if (room == null)
             {
-                if (joinRoomRequest.IsRobot)
+                netPeer.SendResponse(OperationCode.JoinRoom, ReturnCode.JoinRoomFail, null, deliveryMethod);
+                return;
+            }
+
+            IPlayer? player = PlayerManager.Instance.GetPlayer(request.PlayerID);
+
+            if (player == null && playerInfo != null)
+            {
+                if (playerInfo.IsRobot)
                 {
-                    player = OLDPlayerManager.Instance.GetOrCreateRobot(joinRoomRequest.PlayerID);
+                    player = PlayerManager.Instance.CreatePlayer<Robot>(request.PlayerID, null);
                 }
                 else
                 {
-                    player = OLDPlayerManager.Instance.GetOrCreatePlayer(joinRoomRequest.PlayerID, netPeer);
+                    player = PlayerManager.Instance.CreatePlayer<Player>(request.PlayerID, netPeer);
                 }
 
-                PlayerInfo playerInfo = new PlayerInfo();
-                playerInfo.PlayerID = player.ID;
-
-                data = MessagePackSerializer.Serialize(playerInfo);
-
-                room.AddPlayer(player);
+                if (player != null)
+                {
+                    player.OnUpdatePlayerInfo(playerInfo);
+                }
             }
-            else
+
+            if (player == null)
             {
-                netPeer.SendResponse(OperationCode.OnJoinRoom, ReturnCode.JoinRoomFail, null, deliveryMethod);
+                netPeer.SendResponse(OperationCode.JoinRoom, ReturnCode.JoinRoomFail, null, deliveryMethod);
+                return;
             }
+
+            room.OnJoinPlayer(player);
         }
 
         private void OnLeaveRoom(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
         {
             LeaveRoomRequest request = MessagePackSerializer.Deserialize<LeaveRoomRequest>(data);
 
-            OLDPlayer? player = OLDPlayerManager.Instance.GetPlayer(request.PlayerID);
+            var player = PlayerManager.Instance.GetPlayer(request.PlayerID);
 
             if (player != null && player.Room != null)
             {
-                OLDRoom room = player.Room;
-                room.RemovePlayer(request.PlayerID);
+                player.Room.OnLeavePlayer(player);
             }
             else
             {
@@ -99,18 +146,33 @@ namespace GameServer
             }
         }
 
+
+        private void OnCloseRoom(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
+        {
+            int roomID = MessagePackSerializer.Deserialize<int>(data);
+
+            var room = RoomManager.Instance.GetRoom(roomID);
+            if (room != null)
+            {
+                room.OnCloseRoom();
+            }
+        }
+
+
         private void OnSyncEvent(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
         {
-            //SyncEventRequest eventData = MessagePackSerializer.Deserialize<SyncEventRequest>(data);
+            SyncEventRequest syncRequest = MessagePackSerializer.Deserialize<SyncEventRequest>(data);
 
-            OLDPlayer? player = OLDPlayerManager.Instance.GetPlayer(netPeer);
+            var player = PlayerManager.Instance.GetPlayer(syncRequest.PlayerID);
 
-            if (player != null)
+            if (player != null && player.Room != null)
             {
-                OLDRoom? room = player.Room;
-                if (room != null)
+                foreach (var item in player.Room.Players)
                 {
-                    room.SendToAll(OperationCode.SyncEvent, ReturnCode.Success, data, deliveryMethod);
+                    if (item.Value.NetPeer != null)
+                    {
+                        item.Value.NetPeer.SendResponse(OperationCode.SyncEvent, ReturnCode.Success, data, deliveryMethod);
+                    }
                 }
             }
         }

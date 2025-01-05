@@ -91,7 +91,9 @@ namespace Test
             Random rand = new Random();
             joinRoomRequest.PlayerID = rand.Next(1, 100);
             joinRoomRequest.RoomID = 1;
-            joinRoomRequest.IsRobot = true;
+            PlayerInfo playerInfo = new PlayerInfo();
+            playerInfo.IsRobot = true;
+            joinRoomRequest.PlayeInfo = playerInfo;
             byte[] data = MessagePack.MessagePackSerializer.Serialize(joinRoomRequest);
 
             Client.Instance.Send(OperationCode.JoinRoom, data, DeliveryMethod.ReliableOrdered);

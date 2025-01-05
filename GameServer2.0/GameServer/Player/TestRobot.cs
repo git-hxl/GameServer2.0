@@ -1,4 +1,5 @@
 ﻿using GameServer.Protocol;
+using GameServer.Utils;
 using System.Numerics;
 
 namespace GameServer
@@ -60,10 +61,10 @@ namespace GameServer
 
         private void SyncTransfrom()
         {
-            //syncTimer += Server.DeltaTime;
+            syncTimer += Server.DeltaTime;
 
-            //if (syncTimer < 0.1f)
-            //    return;
+            if (syncTimer < 0.1f)
+                return;
 
             SyncTransformData syncTransformData = new SyncTransformData();
             syncTransformData.Position = new UnityEngine.Vector3(position.X, position.Y, position.Z);
@@ -75,7 +76,14 @@ namespace GameServer
 
             if (Room != null)
             {
-                Room.SendToAllSyncEvent(this, SyncCode.SyncTransform, data);
+
+                foreach (var item in Room.Players)
+                {
+                    if(item.Value.NetPeer!=null)
+                    {
+                        item.Value.NetPeer.SendSyncEvent(ID, SyncCode.SyncTransform, data, LiteNetLib.DeliveryMethod.Sequenced);
+                    }
+                }
             }
 
             syncTimer = 0;

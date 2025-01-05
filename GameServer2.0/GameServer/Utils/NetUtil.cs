@@ -27,7 +27,7 @@ namespace GameServer.Utils
 
         public static void SendSyncEvent(this NetPeer netPeer, int playerID, SyncCode syncCode, byte[] data, DeliveryMethod deliveryMethod)
         {
-            SyncRequest syncEventRequest = new SyncRequest();
+            SyncEventRequest syncEventRequest = new SyncEventRequest();
             syncEventRequest.PlayerID = playerID;
             syncEventRequest.SyncCode = (ushort)syncCode;
 

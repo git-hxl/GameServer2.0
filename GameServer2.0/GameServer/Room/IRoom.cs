@@ -1,4 +1,5 @@
 ﻿
+using GameServer.Protocol;
 using System.Collections.Concurrent;
 using Utils;
 
@@ -9,9 +10,13 @@ namespace GameServer
         int ID { get; }
 
 
+        int MasterID { get; }
+
+        RoomInfo? RoomInfo { get; }
+
         ConcurrentDictionary<int, IPlayer> Players { get; }
 
-        void Init(int id);
+        void OnInit(int id);
 
         void OnJoinPlayer(IPlayer player);
 
@@ -19,6 +24,10 @@ namespace GameServer
 
         void OnCloseRoom();
 
-        void Update();
+        void OnUpdateMaster(int master);
+
+        void OnUpdateRoomInfo(RoomInfo roomInfo);
+
+        void OnUpdate();
     }
 }
