@@ -14,6 +14,8 @@ namespace GameServer
         UpdateRoomInfo,
         UpdatePlayerInfo,
 
+        Disconnect,
+
         SyncEvent,
     }
 }

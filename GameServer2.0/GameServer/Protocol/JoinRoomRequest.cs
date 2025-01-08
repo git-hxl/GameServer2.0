@@ -10,7 +10,7 @@ namespace GameServer.Protocol
     {
         public int RoomID { get; set; }
         public int PlayerID { get; set; }
-        public PlayerInfo? PlayeInfo { get; set; }
+        public PlayerInfo PlayeInfo { get; set; }
     }
 
     [MessagePackObject(true)]
@@ -18,8 +18,8 @@ namespace GameServer.Protocol
     {
         public int RoomID { get; set; }
         public int PlayerID { get; set; }
-        public RoomInfo? RoomInfo { get; set; }
+        public RoomInfo RoomInfo { get; set; }
 
-        public List<PlayerInfo?>? PlayerInfos { get; set; }
+        public List<PlayerInfo> PlayerInfos { get; set; }
     }
 }

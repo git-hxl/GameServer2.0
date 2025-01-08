@@ -18,7 +18,7 @@ namespace GameServer
             for (int i = 0; i < count; i++)
             {
                 TestRobot? robot = PlayerManager.Instance.CreatePlayer<TestRobot>(i - 9999, null);
-                robot.OnJoinRoom(this);
+                OnJoinPlayer(robot);
             }
         }
 

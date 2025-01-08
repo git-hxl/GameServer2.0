@@ -9,6 +9,16 @@ namespace GameServer
     {
         public ConcurrentDictionary<int, IRoom> Rooms { get; } = new ConcurrentDictionary<int, IRoom>();
 
+        protected override void OnDispose()
+        {
+            //throw new NotImplementedException();
+        }
+
+        protected override void OnInit()
+        {
+            //throw new NotImplementedException();
+        }
+
         public void CloseRoom(int roomId)
         {
             IRoom? room;
@@ -46,16 +56,6 @@ namespace GameServer
                 return room;
             }
             return null;
-        }
-
-        protected override void OnDispose()
-        {
-            //throw new NotImplementedException();
-        }
-
-        protected override void OnInit()
-        {
-            //throw new NotImplementedException();
         }
     }
 }

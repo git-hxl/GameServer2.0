@@ -3,6 +3,7 @@ using GameServer.Protocol;
 using GameServer.Utils;
 using LiteNetLib;
 using MessagePack;
+using Utils;
 
 namespace GameServer
 {
@@ -17,6 +18,9 @@ namespace GameServer
                     break;
                 case OperationCode.Register:
                     OnRegister(peer, data, deliveryMethod);
+                    break;
+                case OperationCode.Disconnect:
+                    OnDisconnect(peer, data, deliveryMethod);
                     break;
 
                 case OperationCode.CreateRoom:
@@ -54,9 +58,27 @@ namespace GameServer
         {
             LoginRequest loginRequest = MessagePackSerializer.Deserialize<LoginRequest>(data);
 
-            netPeer.SendResponse(OperationCode.Login, ReturnCode.Success, null, deliveryMethod);
+            LoginResponse loginResponse = new LoginResponse();
+            loginResponse.ID = 0;
+
+            loginResponse.ServerTime = DateTimeUtil.TimeStamp;
+
+            data = MessagePackSerializer.Serialize(loginResponse);
+
+            netPeer.SendResponse(OperationCode.Login, ReturnCode.Success, data, deliveryMethod);
         }
 
+        private void OnDisconnect(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
+        {
+            var player = PlayerManager.Instance.GetPlayer(netPeer);
+
+            if (player != null)
+            {
+                PlayerManager.Instance.RemovePlayer(player.ID);
+            }
+
+            netPeer.Disconnect();
+        }
 
         private void OnCreateRoom(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
         {
@@ -104,8 +126,14 @@ namespace GameServer
 
             IPlayer? player = PlayerManager.Instance.GetPlayer(request.PlayerID);
 
-            if (player == null && playerInfo != null)
+            if (player == null)
             {
+                if (playerInfo == null)
+                {
+                    playerInfo = new PlayerInfo();
+                    playerInfo.PlayerID = request.PlayerID;
+                }
+
                 if (playerInfo.IsRobot)
                 {
                     player = PlayerManager.Instance.CreatePlayer<Robot>(request.PlayerID, null);
@@ -149,12 +177,12 @@ namespace GameServer
 
         private void OnCloseRoom(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
         {
-            int roomID = MessagePackSerializer.Deserialize<int>(data);
+            CloseRoomRequest request = MessagePackSerializer.Deserialize<CloseRoomRequest>(data);
 
-            var room = RoomManager.Instance.GetRoom(roomID);
+            var room = RoomManager.Instance.GetRoom(request.RoomID);
             if (room != null)
             {
-                room.OnCloseRoom();
+                RoomManager.Instance.CloseRoom(request.RoomID);
             }
         }
 

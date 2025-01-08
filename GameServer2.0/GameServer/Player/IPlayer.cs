@@ -9,16 +9,17 @@ namespace GameServer
         int ID { get; }
 
         NetPeer? NetPeer { get; }
+        int AreaID { get; }
 
         IRoom? Room { get; }
 
         PlayerInfo? PlayerInfo { get; }
 
-        void OnInit(int id,NetPeer? netPeer);
+        void OnInit(int id, NetPeer? netPeer);
 
         void OnJoinRoom(IRoom room);
         void OnLeaveRoom();
         void OnUpdatePlayerInfo(PlayerInfo info);
-        void OnUpdate();
+        void OnUpdate(float deltaTime);
     }
 }

@@ -14,6 +14,6 @@ namespace GameServer.Protocol
     public class LeaveRoomResponse
     {
         public int PlayerID { get; set; }
-        public RoomInfo? RoomInfo { get; set; }
+        public RoomInfo RoomInfo { get; set; }
     }
 }

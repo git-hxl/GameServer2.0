@@ -21,8 +21,6 @@ namespace GameServer
                     throw new Exception("读取服务器配置文件失败！");
                 }
 
-                Server.DeltaTime = serverConfig.UpdateInterval / 1000f;
-
                 Server.Instance.InitConfig(serverConfig);
 
                 Server.Instance.Start();

@@ -18,10 +18,10 @@ namespace GameServer
             InitPos();
         }
       
-        public override void OnUpdate()
+        public override void OnUpdate(float deltaTime)
         {
-            base.OnUpdate();
-            RandomMove();
+            base.OnUpdate(deltaTime);
+            RandomMove(deltaTime);
         }
 
         private void InitPos()
@@ -41,10 +41,9 @@ namespace GameServer
             //SyncTransfrom();
         }
 
-        private void RandomMove()
+        private void RandomMove(float deltaTime)
         {
-            randomMoveTimer -= Server.DeltaTime;
-
+            randomMoveTimer -= deltaTime;
             if (randomMoveTimer <= 0)
             {
                 System.Random random = new System.Random();
@@ -55,13 +54,13 @@ namespace GameServer
                 randomMoveTimer = random.Next(1, 10);
             }
 
-            position += direction * speed * Server.DeltaTime;
-            SyncTransfrom();
+            position += direction * speed * deltaTime;
+            SyncTransfrom(deltaTime);
         }
 
-        private void SyncTransfrom()
+        private void SyncTransfrom(float deltaTime)
         {
-            syncTimer += Server.DeltaTime;
+            syncTimer += deltaTime;
 
             if (syncTimer < 0.1f)
                 return;
@@ -81,7 +80,7 @@ namespace GameServer
                 {
                     if(item.Value.NetPeer!=null)
                     {
-                        item.Value.NetPeer.SendSyncEvent(ID, SyncCode.SyncTransform, data, LiteNetLib.DeliveryMethod.Sequenced);
+                        item.Value.NetPeer.SendSyncEvent(ID, SyncEventCode.SyncTransform, data, LiteNetLib.DeliveryMethod.Sequenced);
                     }
                 }
             }

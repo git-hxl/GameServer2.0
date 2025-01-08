@@ -18,13 +18,20 @@ namespace GameServer
         public ConcurrentDictionary<int, IPlayer> Players { get; private set; } = new ConcurrentDictionary<int, IPlayer>();
 
         private CancellationTokenSource? _cancellationTokenSource;
+
+        public DateTime CreateTime { get; private set; }
         public virtual void OnInit(int id)
         {
             ID = id;
 
             MasterID = -1;
 
+            CreateTime = DateTime.Now;
+
             Task.Run(Update);
+
+            Log.Information("OnCreateRoom RoomID {0} ", id);
+
         }
 
         public void OnAcquire()
@@ -78,6 +85,8 @@ namespace GameServer
         {
             if (Players.TryRemove(player.ID, out _))
             {
+                player.OnLeaveRoom();
+
                 if (MasterID == player.ID)
                 {
                     var master = Players.Values.FirstOrDefault((a) => a.NetPeer != null);
@@ -161,19 +170,20 @@ namespace GameServer
 
         }
 
-        public virtual void OnUpdate()
+        /// <summary>
+        /// 每帧调用
+        /// </summary>
+        public virtual void OnUpdate(float deltaTime)
         {
             foreach (var item in Players)
             {
                 IPlayer player = item.Value;
 
-                player.OnUpdate();
+                player.OnUpdate(deltaTime);
             }
         }
 
-        /// <summary>
-        /// 每帧调用
-        /// </summary>
+
         private async void Update()
         {
             _cancellationTokenSource = new CancellationTokenSource();
@@ -181,10 +191,17 @@ namespace GameServer
             {
                 while (true)
                 {
-                    await Task.Delay((int)(Server.DeltaTime * 1000), _cancellationTokenSource.Token);
+                    await Task.Delay(Server.UpdateInterval, _cancellationTokenSource.Token);
 
-                    OnUpdate();
+                    OnUpdate(Server.UpdateInterval / 1000f);
+
+                    if (Players.Count <= 0 && (DateTime.Now - CreateTime).TotalHours > 2)
+                    {
+                        break;
+                    }
                 }
+
+                RoomManager.Instance.CloseRoom(ID);
             }
             catch (Exception ex)
             {

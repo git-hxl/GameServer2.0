@@ -1,5 +1,4 @@
-﻿
-using LiteNetLib;
+﻿using LiteNetLib;
 using Serilog;
 
 namespace GameServer
@@ -14,8 +13,7 @@ namespace GameServer
 
         public ServerConfig? Config { get; private set; }
 
-        public static float DeltaTime { get; set; }
-
+        public static int UpdateInterval { get; private set; }
         protected override void OnDispose()
         {
             //throw new NotImplementedException();
@@ -49,6 +47,8 @@ namespace GameServer
             netManager.MaxConnectAttempts = serverConfig.MaxConnectAttempts;
 
             Config = serverConfig;
+
+            UpdateInterval = serverConfig.UpdateInterval;
         }
 
 
@@ -65,6 +65,9 @@ namespace GameServer
 
             netManager.Start(Config.Port);
             Log.Information("start server:{0}", netManager.LocalPort);
+
+            RoomManager.Instance.CreateRoom<TestRoom>(-1);
+            RoomManager.Instance.CreateRoom<Room>(1);
         }
 
         public void Update()
@@ -132,12 +135,12 @@ namespace GameServer
         {
             Log.Information("OnPeerDisconnected {0}", peer.ToString());
 
-            //var player = PlayerManager.Instance.GetPlayer(peer);
+            var player = PlayerManager.Instance.GetPlayer(peer);
 
-            //if (player != null)
-            //{
-            //    PlayerManager.Instance.RemovePlayer(player.ID);
-            //}
+            if (player != null)
+            {
+                PlayerManager.Instance.RemovePlayer(player.ID);
+            }
         }
     }
 }

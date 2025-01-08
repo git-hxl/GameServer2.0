@@ -23,5 +23,17 @@ namespace GameServer.Utils
             }
             return Math.Acos(dot / (magnitudeA * magnitudeB));
         }
+
+        public static double Distance(Vector3 a, Vector3 b)
+        {
+            return Vector3.Distance(a, b);
+        }
+
+        public static double Distance(UnityEngine.Vector3 a, UnityEngine.Vector3 b)
+        {
+            Vector3 aa = new Vector3(a.x, a.y, a.z);
+            Vector3 bb = new Vector3(b.x, b.y, b.z);
+            return Vector3.Distance(aa, bb);
+        }
     }
 }

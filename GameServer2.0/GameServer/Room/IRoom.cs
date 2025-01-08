@@ -28,6 +28,6 @@ namespace GameServer
 
         void OnUpdateRoomInfo(RoomInfo roomInfo);
 
-        void OnUpdate();
+        void OnUpdate(float deltaTime);
     }
 }
