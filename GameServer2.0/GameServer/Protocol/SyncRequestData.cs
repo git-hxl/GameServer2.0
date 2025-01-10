@@ -3,7 +3,7 @@ using MessagePack;
 namespace GameServer.Protocol
 {
     [MessagePackObject(true)]
-    public class SyncEventRequest
+    public class SyncRequestData
     {
         public int PlayerID { get; set; }
         public ushort SyncEventCode { get; set; }

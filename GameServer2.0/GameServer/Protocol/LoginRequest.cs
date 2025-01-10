@@ -1,4 +1,4 @@
-﻿
+
 using MessagePack;
 
 namespace GameServer.Protocol

@@ -20,6 +20,8 @@ namespace GameServer
         private CancellationTokenSource? _cancellationTokenSource;
 
         public DateTime CreateTime { get; private set; }
+
+        public long InactiveTime { get; private set; }
         public virtual void OnInit(int id)
         {
             ID = id;
@@ -31,7 +33,6 @@ namespace GameServer
             Task.Run(Update);
 
             Log.Information("OnCreateRoom RoomID {0} ", id);
-
         }
 
         public void OnAcquire()
@@ -195,7 +196,12 @@ namespace GameServer
 
                     OnUpdate(Server.UpdateInterval / 1000f);
 
-                    if (Players.Count <= 0 && (DateTime.Now - CreateTime).TotalHours > 2)
+                    if (Players.Count <= 0)
+                    {
+                        InactiveTime += Server.UpdateInterval;
+                    }
+
+                    if (InactiveTime > 2 * 60 * 60 * 1000)
                     {
                         break;
                     }
