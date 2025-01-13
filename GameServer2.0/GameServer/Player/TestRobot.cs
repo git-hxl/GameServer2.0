@@ -17,7 +17,7 @@ namespace GameServer
             base.OnJoinRoom(room);
             InitPos();
         }
-      
+
         public override void OnUpdate(float deltaTime)
         {
             base.OnUpdate(deltaTime);
@@ -62,10 +62,11 @@ namespace GameServer
         {
             syncTimer += deltaTime;
 
-            if (syncTimer < 0.1f)
-                return;
+            //if (syncTimer < 0.1f)
+            //    return;
 
             SyncTransformData syncTransformData = new SyncTransformData();
+            syncTransformData.ObjectID = ID;
             syncTransformData.Position = new UnityEngine.Vector3(position.X, position.Y, position.Z);
             syncTransformData.Direction = new UnityEngine.Vector3(direction.X, direction.Y, direction.Z);
             syncTransformData.Scale = new UnityEngine.Vector3(1, 1, 1);
@@ -78,7 +79,7 @@ namespace GameServer
 
                 foreach (var item in Room.Players)
                 {
-                    if(item.Value.NetPeer!=null)
+                    if (item.Value.NetPeer != null)
                     {
                         item.Value.NetPeer.SendSyncEvent(ID, SyncEventCode.SyncTransform, data, LiteNetLib.DeliveryMethod.Sequenced);
                     }

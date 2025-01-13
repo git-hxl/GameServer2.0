@@ -1,5 +1,6 @@
 ﻿
 
+using GameServer.Protocol;
 using Utils;
 
 namespace GameServer
@@ -17,7 +18,13 @@ namespace GameServer
         {
             for (int i = 0; i < count; i++)
             {
-                TestRobot? robot = PlayerManager.Instance.CreatePlayer<TestRobot>(i - 9999, null);
+                int id = i - 9999;
+                TestRobot? robot = PlayerManager.Instance.CreatePlayer<TestRobot>(id, null);
+                PlayerInfo playerInfo = new PlayerInfo();
+                playerInfo.PlayerID = id;
+                playerInfo.IsRobot = true;
+                robot.OnUpdatePlayerInfo(playerInfo);
+               
                 OnJoinPlayer(robot);
             }
         }
