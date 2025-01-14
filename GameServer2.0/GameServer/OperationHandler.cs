@@ -63,9 +63,9 @@ namespace GameServer
 
             loginResponse.ServerTime = DateTimeUtil.TimeStamp;
 
-            data = MessagePackSerializer.Serialize(loginResponse);
+            var respdata = MessagePackSerializer.Serialize(loginResponse);
 
-            netPeer.SendResponse(OperationCode.Login, ReturnCode.Success, data, deliveryMethod);
+            netPeer.SendResponse(OperationCode.Login, ReturnCode.Success, respdata, deliveryMethod);
         }
 
         private void OnDisconnect(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
@@ -106,9 +106,9 @@ namespace GameServer
 
             createRoomResponse.RoomInfo = roomInfo;
 
-            data = MessagePack.MessagePackSerializer.Serialize(createRoomResponse);
+            var respdata = MessagePack.MessagePackSerializer.Serialize(createRoomResponse);
 
-            netPeer.SendResponse(OperationCode.CreateRoom, ReturnCode.Success, data, deliveryMethod);
+            netPeer.SendResponse(OperationCode.CreateRoom, ReturnCode.Success, respdata, deliveryMethod);
 
         }
 
