@@ -1,5 +1,9 @@
-﻿using LiteNetLib;
+﻿using GameServer.Protocol;
+using LiteNetLib;
+using MessagePack;
 using Serilog;
+using System.Diagnostics;
+using Utils;
 
 namespace GameServer
 {
@@ -114,11 +118,11 @@ namespace GameServer
                 return;
             try
             {
-                //Log.Information("Listener_NetworkReceiveEvent {0}", peer.ToString());
+                Request request = MessagePackSerializer.Deserialize<Request>(reader.GetRemainingBytes());
 
-                OperationCode operationCode = (OperationCode)reader.GetUShort();
+                Log.Information("接收请求：{0} 延迟：{1} ping：{2}", request.OperationCode, DateTimeUtil.TimeStamp - request.Timestamp, peer.Ping);
 
-                operationHandler.OnRequest(peer, operationCode, reader.GetRemainingBytes(), deliveryMethod);
+                operationHandler.OnRequest(peer, request, deliveryMethod);
             }
             catch (Exception e)
             {

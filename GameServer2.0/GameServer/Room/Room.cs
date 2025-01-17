@@ -73,7 +73,7 @@ namespace GameServer
                 {
                     if (item.Value.NetPeer != null)
                     {
-                        item.Value.NetPeer.SendResponse(OperationCode.JoinRoom, ReturnCode.Success, data, LiteNetLib.DeliveryMethod.ReliableOrdered);
+                        item.Value.NetPeer.SendResponse(OperationCode.JoinRoom, ReturnCode.Success, "", data, LiteNetLib.DeliveryMethod.ReliableOrdered);
                     }
                 }
             }
@@ -108,13 +108,13 @@ namespace GameServer
                 {
                     if (item.Value.NetPeer != null)
                     {
-                        item.Value.NetPeer.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, data, LiteNetLib.DeliveryMethod.ReliableOrdered);
+                        item.Value.NetPeer.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, "", data, LiteNetLib.DeliveryMethod.ReliableOrdered);
                     }
                 }
 
                 if (player.NetPeer != null)
                 {
-                    player.NetPeer.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, data, LiteNetLib.DeliveryMethod.ReliableOrdered);
+                    player.NetPeer.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, "", data, LiteNetLib.DeliveryMethod.ReliableOrdered);
                 }
             }
         }
@@ -141,7 +141,7 @@ namespace GameServer
             {
                 if (item.Value.NetPeer != null)
                 {
-                    item.Value.NetPeer.SendResponse(OperationCode.CloseRoom, ReturnCode.Success, null, LiteNetLib.DeliveryMethod.ReliableOrdered);
+                    item.Value.NetPeer.SendResponse(OperationCode.CloseRoom, ReturnCode.Success, "", null, LiteNetLib.DeliveryMethod.ReliableOrdered);
                 }
             }
 
