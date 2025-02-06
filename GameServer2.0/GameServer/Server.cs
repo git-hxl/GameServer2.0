@@ -71,7 +71,7 @@ namespace GameServer
             Log.Information("start server:{0}", netManager.LocalPort);
 
             RoomManager.Instance.CreateRoom<TestRoom>(-1);
-            RoomManager.Instance.CreateRoom<Room>(1);
+            RoomManager.Instance.CreateRoom<BaseRoom>(1);
         }
 
         public void Update()

@@ -5,7 +5,7 @@ using Utils;
 
 namespace GameServer
 {
-    public class TestRoom : Room
+    public class TestRoom : BaseRoom
     {
         public override void OnInit(int id)
         {

@@ -94,7 +94,7 @@ namespace GameServer
                 return;
             }
 
-            room = RoomManager.Instance.CreateRoom<Room>(roomInfo.RoomID);
+            room = RoomManager.Instance.CreateRoom<BaseRoom>(roomInfo.RoomID);
 
             if (room != null)
             {
@@ -140,7 +140,7 @@ namespace GameServer
                 }
                 else
                 {
-                    player = PlayerManager.Instance.CreatePlayer<Player>(joinRoomRequest.PlayerID, netPeer);
+                    player = PlayerManager.Instance.CreatePlayer<BasePlayer>(joinRoomRequest.PlayerID, netPeer);
                 }
 
                 if (player != null)

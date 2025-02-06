@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace GameServer
 {
-    public class TestRobot : Player
+    public class TestRobot : BasePlayer
     {
         private float speed = 10;
         private Vector3 position;

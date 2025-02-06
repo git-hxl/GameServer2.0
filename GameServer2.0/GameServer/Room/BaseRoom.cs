@@ -8,7 +8,7 @@ using System.Collections.Concurrent;
 
 namespace GameServer
 {
-    public class Room : IRoom
+    public class BaseRoom : IRoom
     {
         public int ID { get; private set; }
 

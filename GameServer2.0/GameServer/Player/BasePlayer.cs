@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace GameServer
 {
-    public class Player : IPlayer
+    public class BasePlayer : IPlayer
     {
         public int ID { get; private set; }
 

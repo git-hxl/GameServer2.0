@@ -1,7 +1,7 @@
 ﻿
 namespace GameServer
 {
-    public class Robot : Player
+    public class Robot : BasePlayer
     {
 
     }
