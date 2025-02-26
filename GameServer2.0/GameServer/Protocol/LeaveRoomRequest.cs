@@ -5,15 +5,15 @@ using MessagePack;
 namespace GameServer.Protocol
 {
     [MessagePackObject(true)]
-    public class LeaveRoomRequest
+    public class LeaveRoomRequest : BaseRequest
     {
-        public int PlayerID {  get; set; }
+
     }
 
     [MessagePackObject(true)]
-    public class LeaveRoomResponse
+    public class LeaveRoomResponse : BaseResponse
     {
-        public int PlayerID { get; set; }
+        public int UserID { get; set; }
         public RoomInfo RoomInfo { get; set; }
     }
 }

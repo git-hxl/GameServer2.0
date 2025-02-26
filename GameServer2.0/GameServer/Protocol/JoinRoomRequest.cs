@@ -6,20 +6,18 @@ using System.Collections.Generic;
 namespace GameServer.Protocol
 {
     [MessagePackObject(true)]
-    public class JoinRoomRequest
+    public class JoinRoomRequest : BaseRequest
     {
         public int RoomID { get; set; }
-        public int PlayerID { get; set; }
-        public PlayerInfo PlayeInfo { get; set; }
+        public UserInfo UserInfo { get; set; }
     }
 
     [MessagePackObject(true)]
-    public class JoinRoomResponse
+    public class JoinRoomResponse : BaseResponse
     {
         public int RoomID { get; set; }
-        public int PlayerID { get; set; }
+        public int UserID { get; set; }
         public RoomInfo RoomInfo { get; set; }
-
-        public List<PlayerInfo> PlayerInfos { get; set; }
+        public List<UserInfo> Users { get; set; }
     }
 }

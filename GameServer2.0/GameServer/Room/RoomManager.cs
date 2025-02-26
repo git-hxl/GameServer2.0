@@ -5,9 +5,9 @@ using Utils;
 
 namespace GameServer
 {
-    public class RoomManager : Singleton<RoomManager>, IRoomManager
+    public class RoomManager : Singleton<RoomManager>
     {
-        public ConcurrentDictionary<int, IRoom> Rooms { get; } = new ConcurrentDictionary<int, IRoom>();
+        public ConcurrentDictionary<int, BaseRoom> Rooms { get; } = new ConcurrentDictionary<int, BaseRoom>();
 
         protected override void OnDispose()
         {
@@ -21,7 +21,7 @@ namespace GameServer
 
         public void CloseRoom(int roomId)
         {
-            IRoom? room;
+            BaseRoom? room;
             if (Rooms.TryRemove(roomId, out room))
             {
                 room.OnCloseRoom();
@@ -30,15 +30,22 @@ namespace GameServer
             }
         }
 
-        public T? CreateRoom<T>(int roomId) where T : IRoom, new()
+        public T? CreateRoom<T>(int roomId) where T : BaseRoom, new()
         {
-            IRoom room = ReferencePool.Instance.Acquire<T>();
+            BaseRoom? room = null;
+
+            if (Rooms.TryGetValue(roomId, out room))
+            {
+                return room as T;
+            }
+
+            room = ReferencePool.Instance.Acquire<T>();
 
             if (Rooms.TryAdd(roomId, room))
             {
                 room.OnInit(roomId);
 
-                return (T)room;
+                return room as T;
             }
 
             ReferencePool.Instance.Release(room);
@@ -48,12 +55,12 @@ namespace GameServer
             return default(T);
         }
 
-        public IRoom? GetRoom(int roomId)
+        public T? GetRoom<T>(int roomId) where T : BaseRoom
         {
-            IRoom? room;
+            BaseRoom? room;
             if (Rooms.TryGetValue(roomId, out room))
             {
-                return room;
+                return room as T;
             }
             return null;
         }

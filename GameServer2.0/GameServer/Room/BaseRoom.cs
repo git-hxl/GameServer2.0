@@ -5,17 +5,18 @@ using LiteNetLib;
 using MessagePack;
 using Serilog;
 using System.Collections.Concurrent;
+using Utils;
 
 namespace GameServer
 {
-    public class BaseRoom : IRoom
+    public class BaseRoom : IReference
     {
         public int ID { get; private set; }
 
         public int MasterID { get; private set; }
 
         public RoomInfo? RoomInfo { get; private set; }
-        public ConcurrentDictionary<int, IPlayer> Players { get; private set; } = new ConcurrentDictionary<int, IPlayer>();
+        public ConcurrentDictionary<int, BasePlayer> Players { get; private set; } = new ConcurrentDictionary<int, BasePlayer>();
 
         private CancellationTokenSource? _cancellationTokenSource;
 
@@ -46,7 +47,7 @@ namespace GameServer
         }
 
 
-        public virtual void OnJoinPlayer(IPlayer player)
+        public virtual void OnJoinPlayer(BasePlayer player)
         {
             if (Players.TryAdd(player.ID, player))
             {
@@ -60,21 +61,16 @@ namespace GameServer
                 JoinRoomResponse joinRoomResponse = new JoinRoomResponse();
 
                 joinRoomResponse.RoomID = ID;
-
-                joinRoomResponse.PlayerID = player.ID;
-
+                joinRoomResponse.UserID = player.ID;
                 joinRoomResponse.RoomInfo = RoomInfo;
 
-                joinRoomResponse.PlayerInfos = Players.Values.Select((a) => a.PlayerInfo).ToList();
+                joinRoomResponse.Users = Players.Values.Select((a) => a.UserInfo).ToList();
 
                 byte[] data = MessagePackSerializer.Serialize(joinRoomResponse);
 
                 foreach (var item in Players)
                 {
-                    if (item.Value.NetPeer != null)
-                    {
-                        item.Value.NetPeer.SendResponse(OperationCode.JoinRoom, ReturnCode.Success, "", data, LiteNetLib.DeliveryMethod.ReliableOrdered);
-                    }
+                    item.Value.SendResponse(OperationCode.JoinRoom, ReturnCode.Success, joinRoomResponse);
                 }
             }
 
@@ -82,7 +78,7 @@ namespace GameServer
 
         }
 
-        public virtual void OnLeavePlayer(IPlayer player)
+        public virtual void OnLeavePlayer(BasePlayer player)
         {
             if (Players.TryRemove(player.ID, out _))
             {
@@ -99,7 +95,7 @@ namespace GameServer
 
                 LeaveRoomResponse leaveRoomResponse = new LeaveRoomResponse();
 
-                leaveRoomResponse.PlayerID = player.ID;
+                leaveRoomResponse.UserID = player.ID;
                 leaveRoomResponse.RoomInfo = RoomInfo;
 
                 byte[] data = MessagePackSerializer.Serialize(leaveRoomResponse);
@@ -108,14 +104,11 @@ namespace GameServer
                 {
                     if (item.Value.NetPeer != null)
                     {
-                        item.Value.NetPeer.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, "", data, LiteNetLib.DeliveryMethod.ReliableOrdered);
+                        item.Value.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, leaveRoomResponse);
                     }
                 }
 
-                if (player.NetPeer != null)
-                {
-                    player.NetPeer.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, "", data, LiteNetLib.DeliveryMethod.ReliableOrdered);
-                }
+                player.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, leaveRoomResponse);
             }
         }
 
@@ -139,9 +132,9 @@ namespace GameServer
 
             foreach (var item in Players)
             {
-                if (item.Value.NetPeer != null)
+                if (item.Value != null)
                 {
-                    item.Value.NetPeer.SendResponse(OperationCode.CloseRoom, ReturnCode.Success, "", null, LiteNetLib.DeliveryMethod.ReliableOrdered);
+                    item.Value.SendResponse(OperationCode.CloseRoom, ReturnCode.Success,null);
                 }
             }
 
@@ -178,7 +171,7 @@ namespace GameServer
         {
             foreach (var item in Players)
             {
-                IPlayer player = item.Value;
+                var player = item.Value;
 
                 player.OnUpdate(deltaTime);
             }

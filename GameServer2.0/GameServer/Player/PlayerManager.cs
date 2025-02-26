@@ -6,70 +6,57 @@ using Utils;
 
 namespace GameServer
 {
-    public class PlayerManager : Singleton<PlayerManager>, IPlayerManager
+    public class PlayerManager : Singleton<PlayerManager>
     {
-        public ConcurrentDictionary<int, IPlayer> Players { get; private set; } = new ConcurrentDictionary<int, IPlayer>();
+        public ConcurrentDictionary<int, BasePlayer> Players { get; } = new ConcurrentDictionary<int, BasePlayer>();
 
-        public ConcurrentDictionary<int, int> PlayerIDs { get; private set; } = new ConcurrentDictionary<int, int>();
 
-        public T? CreatePlayer<T>(int id, NetPeer? netPeer) where T : IPlayer, new()
+        public T? GetPlayer<T>(int id) where T : BasePlayer
         {
-            IPlayer player = ReferencePool.Instance.Acquire<T>();
-
-            if (Players.TryAdd(id, player))
+            BasePlayer? basePlayer = null;
+            if (Players.TryGetValue(id, out basePlayer))
             {
-                player.OnInit(id, netPeer);
+                return basePlayer as T;
+            }
+            return null;
+        }
 
-                if (netPeer != null)
-                {
-                    PlayerIDs.AddOrUpdate(netPeer.Id, id, (key, value) => value = id);
-                }
+        public T? CreatePlayer<T>(int userID, NetPeer netPeer) where T : BasePlayer, new()
+        {
+            BasePlayer? player = null;
 
-                return (T)player;
+            if (Players.TryGetValue(userID, out player))
+            {
+                return player as T;
+            }
+
+            player = ReferencePool.Instance.Acquire<T>();
+
+            if (Players.TryAdd(userID, player))
+            {
+                player.OnInit(userID, netPeer);
+
+                return player as T;
             }
 
             ReferencePool.Instance.Release(player);
 
-            Log.Information("CreatePlayer Failed,ID {0} is existed!", id);
+            Log.Information("CreatePlayer Failed,UserID {0} is existed!", userID);
 
             return default(T);
         }
 
-
-        public IPlayer? GetPlayer(int id)
-        {
-            IPlayer? player;
-            if (Players.TryGetValue(id, out player))
-            {
-                return player;
-            }
-            return null;
-        }
-
-        public IPlayer? GetPlayer(NetPeer netPeer)
-        {
-            if (PlayerIDs.TryGetValue(netPeer.Id, out int playerID))
-            {
-                return GetPlayer(playerID);
-            }
-            return null;
-        }
-
         public void RemovePlayer(int id)
         {
-            IPlayer? player;
-            if (Players.TryRemove(id, out player))
+            BasePlayer? basePlayer;
+            if (Players.TryRemove(id, out basePlayer))
             {
-                var room = player.Room;
+                var room = basePlayer.Room;
                 if (room != null)
                 {
-                    room.OnLeavePlayer(player);
+                    room.OnLeavePlayer(basePlayer);
                 }
-                if (player.NetPeer != null)
-                {
-                    PlayerIDs.TryRemove(player.NetPeer.Id, out _);
-                }
-                ReferencePool.Instance.Release(player);
+                ReferencePool.Instance.Release(basePlayer);
             }
         }
 

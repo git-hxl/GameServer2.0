@@ -135,7 +135,7 @@ namespace Test
             JoinRoomRequest joinRoomRequest = new JoinRoomRequest();
 
 
-            joinRoomRequest.PlayerID = 123;
+            joinRoomRequest.UserID = 123;
             joinRoomRequest.RoomID = id;
             byte[] data = MessagePack.MessagePackSerializer.Serialize(joinRoomRequest);
 
@@ -145,7 +145,7 @@ namespace Test
         private static void LeaveRoom()
         {
             LeaveRoomRequest leaveRoomRequest = new LeaveRoomRequest();
-            leaveRoomRequest.PlayerID = 123;
+            leaveRoomRequest.UserID = 123;
             byte[] data = MessagePack.MessagePackSerializer.Serialize(leaveRoomRequest);
 
             Client.Instance.Send(OperationCode.LeaveRoom, data, DeliveryMethod.ReliableOrdered);
@@ -156,11 +156,11 @@ namespace Test
             JoinRoomRequest joinRoomRequest = new JoinRoomRequest();
 
             Random rand = new Random();
-            joinRoomRequest.PlayerID = rand.Next(1, 100);
+            joinRoomRequest.UserID = rand.Next(1, 100);
             joinRoomRequest.RoomID = id;
-            PlayerInfo playerInfo = new PlayerInfo();
+            UserInfo playerInfo = new UserInfo();
             playerInfo.IsRobot = true;
-            joinRoomRequest.PlayeInfo = playerInfo;
+            joinRoomRequest.UserInfo = playerInfo;
             byte[] data = MessagePack.MessagePackSerializer.Serialize(joinRoomRequest);
 
             Client.Instance.Send(OperationCode.JoinRoom, data, DeliveryMethod.ReliableOrdered);

@@ -20,10 +20,9 @@ namespace GameServer
             {
                 int id = i - 9999;
                 TestRobot? robot = PlayerManager.Instance.CreatePlayer<TestRobot>(id, null);
-                PlayerInfo playerInfo = new PlayerInfo();
-                playerInfo.PlayerID = id;
-                playerInfo.IsRobot = true;
-                robot.OnUpdatePlayerInfo(playerInfo);
+                UserInfo userInfo = new UserInfo();
+                userInfo.IsRobot = true;
+                robot.OnUpdatePlayerInfo(userInfo);
                
                 OnJoinPlayer(robot);
             }

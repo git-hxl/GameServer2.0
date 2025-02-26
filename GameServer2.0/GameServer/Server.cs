@@ -4,6 +4,8 @@ using MessagePack;
 using Serilog;
 using System.Diagnostics;
 using Utils;
+using System.Runtime.InteropServices;
+using Newtonsoft.Json;
 
 namespace GameServer
 {
@@ -72,6 +74,8 @@ namespace GameServer
 
             RoomManager.Instance.CreateRoom<TestRoom>(-1);
             RoomManager.Instance.CreateRoom<BaseRoom>(1);
+
+            DebugStatisticsInfo();
         }
 
         public void Update()
@@ -118,11 +122,11 @@ namespace GameServer
                 return;
             try
             {
-                Request request = MessagePackSerializer.Deserialize<Request>(reader.GetRemainingBytes());
+                OperationCode operationCode = (OperationCode)reader.GetUShort();
 
-                Log.Information("接收请求：{0} 延迟：{1} ping：{2}", request.OperationCode, DateTimeUtil.TimeStamp - request.Timestamp, peer.Ping);
+                Log.Information("接收请求：{0}  ping：{1}", operationCode, peer.Ping);
 
-                operationHandler.OnRequest(peer, request, deliveryMethod);
+                operationHandler.OnRequest(peer, operationCode, reader.GetRemainingBytes(), deliveryMethod);
             }
             catch (Exception e)
             {
@@ -138,13 +142,27 @@ namespace GameServer
         private void Listener_PeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
         {
             Log.Information("OnPeerDisconnected {0}", peer.ToString());
+        }
 
-            var player = PlayerManager.Instance.GetPlayer(peer);
+        //输出统计信息
+        private void DebugStatisticsInfo()
+        {
+            PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+            PerformanceCounter ramCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use");
 
-            if (player != null)
+            Task.Run(async() =>
             {
-                PlayerManager.Instance.RemovePlayer(player.ID);
-            }
+                while (true)
+                {
+                    await Task.Delay(5000);
+                    float cpuUsage = cpuCounter.NextValue();
+                    float availableMemory = ramCounter.NextValue();
+
+                    var o = new { RoomCount = RoomManager.Instance.Rooms.Count, PlayerCount = PlayerManager.Instance.Players.Count, Info = $"CPU: {cpuUsage.ToString("F1")}% Mem: {availableMemory.ToString("F1")}%" };
+
+                    Log.Information(JsonConvert.SerializeObject(o));
+                }
+            });
         }
     }
 }

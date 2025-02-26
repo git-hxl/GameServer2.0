@@ -4,18 +4,14 @@ using MessagePack;
 namespace GameServer.Protocol
 {
     [MessagePackObject(true)]
-    public class CreateRoomRequest
+    public class CreateRoomRequest : BaseRequest
     {
-        public int PlayerID {  get; set; }
-
         public RoomInfo RoomInfo { get; set; }
     }
 
     [MessagePackObject(true)]
-    public class CreateRoomResponse
+    public class CreateRoomResponse : BaseResponse
     {
-        public int PlayerID { get; set; }
-
         public RoomInfo RoomInfo { get; set; }
     }
 }

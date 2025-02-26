@@ -5,7 +5,7 @@ using UnityEngine;
 namespace GameServer.Protocol
 {
     [MessagePackObject(true)]
-    public class SyncTransformData
+    public class TransformData
     {
         public int ObjectID { get; set; }
         public Vector3 Position { get; set; }

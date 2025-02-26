@@ -2,7 +2,7 @@
 
 namespace GameServer
 {
-    public enum SyncEventCode : ushort
+    public enum SyncCode : ushort
     {
         SyncObject = 0,
         SyncTransform,

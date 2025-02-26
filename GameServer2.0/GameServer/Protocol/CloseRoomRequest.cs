@@ -4,8 +4,8 @@ using MessagePack;
 namespace GameServer.Protocol
 {
     [MessagePackObject(true)]
-    public class CloseRoomRequest
+    public class CloseRoomRequest : BaseRequest
     {
-        public int RoomID {  get; set; }
+        public int RoomID { get; set; }
     }
 }

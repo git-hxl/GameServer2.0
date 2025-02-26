@@ -5,10 +5,9 @@ using MessagePack;
 namespace GameServer.Protocol
 {
     [MessagePackObject(true)]
-    public class PlayerInfo
+    public class UserInfo
     {
-        public int PlayerID { get; set; }
-        public string PlayerName { get; set; }
+        public string UserName { get; set; }
         public bool IsRobot { get; set; }
     }
 }

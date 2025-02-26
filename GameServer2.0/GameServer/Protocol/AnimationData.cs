@@ -1,12 +1,11 @@
 
 using MessagePack;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace GameServer.Protocol
 {
     [MessagePackObject(true)]
-    public class SyncAnimationData
+    public class AnimationData
     {
         public int ObjectID { get; set; }
         public int StateHash { get; set; }

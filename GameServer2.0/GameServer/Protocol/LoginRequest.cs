@@ -4,16 +4,14 @@ using MessagePack;
 namespace GameServer.Protocol
 {
     [MessagePackObject(true)]
-    public class LoginRequest
+    public class LoginRequest : BaseRequest
     {
         public string Account { get; set; }
         public string Password { get; set; }
     }
 
     [MessagePackObject(true)]
-    public class LoginResponse
+    public class LoginResponse : BaseResponse
     {
-        public int ID { get; set; }
-        public long ServerTime { get; set; }
     }
 }

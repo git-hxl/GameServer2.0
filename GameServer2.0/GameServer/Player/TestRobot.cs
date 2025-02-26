@@ -12,7 +12,7 @@ namespace GameServer
         private float randomMoveTimer;
         private float syncTimer;
 
-        public override void OnJoinRoom(IRoom room)
+        public override void OnJoinRoom(BaseRoom room)
         {
             base.OnJoinRoom(room);
             InitPos();
@@ -65,14 +65,21 @@ namespace GameServer
             //if (syncTimer < 0.1f)
             //    return;
 
-            SyncTransformData syncTransformData = new SyncTransformData();
+            TransformData syncTransformData = new TransformData();
             syncTransformData.ObjectID = ID;
             syncTransformData.Position = new UnityEngine.Vector3(position.X, position.Y, position.Z);
             syncTransformData.Direction = new UnityEngine.Vector3(direction.X, direction.Y, direction.Z);
             syncTransformData.Scale = new UnityEngine.Vector3(1, 1, 1);
             syncTransformData.Speed = speed;
 
-            byte[] data = MessagePack.MessagePackSerializer.Serialize(syncTransformData);
+            byte[] transformData = MessagePack.MessagePackSerializer.Serialize(syncTransformData);
+
+            SyncRequest syncRequest = new SyncRequest();
+
+            syncRequest.SyncCode = SyncCode.SyncTransform;
+            syncRequest.SyncData = transformData;
+
+            byte[] sendData = MessagePack.MessagePackSerializer.Serialize(syncRequest);
 
             if (Room != null)
             {
@@ -81,7 +88,7 @@ namespace GameServer
                 {
                     if (item.Value.NetPeer != null)
                     {
-                        item.Value.NetPeer.SendSyncEvent(ID, SyncEventCode.SyncTransform, data, LiteNetLib.DeliveryMethod.Sequenced);
+                        item.Value.SendSyncEvent(sendData, LiteNetLib.DeliveryMethod.Sequenced);
                     }
                 }
             }
