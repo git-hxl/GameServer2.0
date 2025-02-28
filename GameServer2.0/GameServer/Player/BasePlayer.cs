@@ -91,7 +91,9 @@ namespace GameServer
             baseRequest.UserID = ID;
             baseRequest.Timestamp = DateTimeUtil.TimeStamp;
 
-            byte[] data = MessagePackSerializer.Serialize(baseRequest);
+            Type type = baseRequest.GetType();
+
+            byte[] data = MessagePackSerializer.Serialize(type, baseRequest);
 
             netDataWriter.Put(data);
 
@@ -116,7 +118,9 @@ namespace GameServer
             baseResponse.ErrorMsg = returnMsg;
             baseResponse.Timestamp = DateTimeUtil.TimeStamp;
 
-            byte[] data = MessagePackSerializer.Serialize(baseResponse);
+            Type type = baseResponse.GetType();
+
+            byte[] data = MessagePackSerializer.Serialize(type, baseResponse);
 
             netDataWriter.Put(data);
 

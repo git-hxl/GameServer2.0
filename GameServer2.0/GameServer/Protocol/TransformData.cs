@@ -8,9 +8,9 @@ namespace GameServer.Protocol
     public class TransformData
     {
         public int ObjectID { get; set; }
-        public Vector3 Position { get; set; }
-        public Vector3 Direction { get; set; }
-        public Vector3 Scale { get; set; }
+        public UnityEngine.Vector3 Position { get; set; }
+        public UnityEngine.Vector3 Direction { get; set; }
+        public UnityEngine.Vector3 Scale { get; set; }
         public float Speed { get; set; }
     }
 }

@@ -4,7 +4,9 @@ namespace GameServer
 {
     public enum SyncCode : ushort
     {
-        SyncObject = 0,
+        SyncSpawnObject = 0,
+
+        SyncRemoveObject,
         SyncTransform,
         SyncAnimation,
     }

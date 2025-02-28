@@ -73,9 +73,6 @@ namespace GameServer
                     item.Value.SendResponse(OperationCode.JoinRoom, ReturnCode.Success, joinRoomResponse);
                 }
             }
-
-
-
         }
 
         public virtual void OnLeavePlayer(BasePlayer player)

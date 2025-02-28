@@ -3,6 +3,7 @@ using GameServer.Protocol;
 using GameServer.Utils;
 using LiteNetLib;
 using MessagePack;
+using Serilog;
 using Utils;
 
 namespace GameServer
@@ -82,7 +83,11 @@ namespace GameServer
             BasePlayer? player = PlayerManager.Instance.GetPlayer<BasePlayer>(createRoomRequest.UserID);
 
             if (player == null)
+            {
+                Log.Error("该用户未登录！！！");
                 return;
+            }
+
 
             if (room == null)
             {
@@ -115,16 +120,24 @@ namespace GameServer
             BasePlayer? player = PlayerManager.Instance.GetPlayer<BasePlayer>(joinRoomRequest.UserID);
 
             if (player == null)
+            {
+                Log.Error("该用户未登录！！！");
                 return;
+            }
+
+            player.OnUpdatePlayerInfo(userInfo);
 
             if (room == null)
             {
                 player.SendResponse(OperationCode.JoinRoom, ReturnCode.JoinRoomFail, null, "room is not existed", deliveryMethod);
                 return;
             }
-
-            player.OnUpdatePlayerInfo(userInfo);
-
+            //重连用户
+            if (player.NetPeer != netPeer)
+            {
+                player.OnInit(joinRoomRequest.UserID, netPeer);
+                room.OnLeavePlayer(player);
+            }
             room.OnJoinPlayer(player);
         }
 
