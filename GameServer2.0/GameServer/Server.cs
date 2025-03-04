@@ -158,9 +158,9 @@ namespace GameServer
                     float cpuUsage = cpuCounter.NextValue();
                     float availableMemory = ramCounter.NextValue();
 
-                    var o = new { RoomCount = RoomManager.Instance.Rooms.Count, PlayerCount = PlayerManager.Instance.Players.Count, Info = $"CPU: {cpuUsage.ToString("F1")}% Mem: {availableMemory.ToString("F1")}%" };
+                   // var o = new { RoomCount = RoomManager.Instance.Rooms.Count, PlayerCount = PlayerManager.Instance.Players.Count, Info = $"CPU: {cpuUsage.ToString("F1")}% Mem: {availableMemory.ToString("F1")}%" };
 
-                    Log.Information(JsonConvert.SerializeObject(o));
+                    Log.Information("RoomCount: {0} PlayerCount：{1} CPU：{2:F1}% Mem：{3:F1}%", RoomManager.Instance.Rooms.Count, PlayerManager.Instance.Players.Count, cpuUsage, availableMemory);
                 }
             });
         }

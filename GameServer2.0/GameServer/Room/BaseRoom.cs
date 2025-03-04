@@ -46,6 +46,13 @@ namespace GameServer
             // throw new NotImplementedException();
         }
 
+        public List<BasePlayer> GetActivePlayers()
+        {
+            lock (this)
+            {
+                return Players.Values.Where((a) => a.NetPeer != null && a.NetPeer.ConnectionState == ConnectionState.Connected).ToList();
+            }
+        }
 
         public virtual void OnJoinPlayer(BasePlayer player)
         {
@@ -64,7 +71,7 @@ namespace GameServer
                 joinRoomResponse.UserID = player.ID;
                 joinRoomResponse.RoomInfo = RoomInfo;
 
-                joinRoomResponse.Users = Players.Values.Select((a) => a.UserInfo).ToList();
+                joinRoomResponse.Users = GetActivePlayers().Select((a) => a.UserInfo).ToList();
 
                 byte[] data = MessagePackSerializer.Serialize(joinRoomResponse);
 
@@ -131,7 +138,7 @@ namespace GameServer
             {
                 if (item.Value != null)
                 {
-                    item.Value.SendResponse(OperationCode.CloseRoom, ReturnCode.Success,null);
+                    item.Value.SendResponse(OperationCode.CloseRoom, ReturnCode.Success, null);
                 }
             }
 

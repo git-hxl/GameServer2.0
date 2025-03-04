@@ -68,7 +68,7 @@ namespace GameServer
             TransformData syncTransformData = new TransformData();
             syncTransformData.ObjectID = ID;
             syncTransformData.Position = new UnityEngine.Vector3(position.X, position.Y, position.Z);
-            syncTransformData.Direction = new UnityEngine.Vector3(direction.X, direction.Y, direction.Z);
+            syncTransformData.EulerAngles = new UnityEngine.Vector3(direction.X, direction.Y, direction.Z);
             syncTransformData.Scale = new UnityEngine.Vector3(1, 1, 1);
             syncTransformData.Speed = speed;
 
