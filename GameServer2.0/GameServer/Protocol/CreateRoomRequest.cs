@@ -6,6 +6,7 @@ namespace GameServer.Protocol
     [MessagePackObject(true)]
     public class CreateRoomRequest : BaseRequest
     {
+        public int RoomID {  get; set; }
         public RoomInfo RoomInfo { get; set; }
     }
 

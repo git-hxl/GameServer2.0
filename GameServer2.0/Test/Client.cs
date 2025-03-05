@@ -4,11 +4,7 @@ using LiteNetLib.Utils;
 using LiteNetLib;
 using MessagePack;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Utils;
 
 namespace Test
 {
@@ -46,19 +42,32 @@ namespace Test
             server = null;
         }
 
-        public void Send(OperationCode code, byte[] data, DeliveryMethod delivery)
+        public void SendRequest(OperationCode code, BaseRequest? baseRequest, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
         {
             if (server == null)
-            {
                 return;
-            }
+
             NetDataWriter netDataWriter = new NetDataWriter();
+
             netDataWriter.Put((ushort)code);
-            if (data != null)
+
+            if (baseRequest == null)
             {
-                netDataWriter.Put(data);
+                baseRequest = new BaseRequest();
             }
-            server.Send(netDataWriter, delivery);
+
+            Random random = new Random();
+
+            baseRequest.UserID = random.Next(int.MinValue, int.MaxValue);
+            baseRequest.Timestamp = DateTimeUtil.TimeStamp;
+
+            Type type = baseRequest.GetType();
+
+            byte[] data = MessagePackSerializer.Serialize(type, baseRequest);
+
+            netDataWriter.Put(data);
+
+            server.Send(netDataWriter, deliveryMethod);
         }
 
         public void Update()
@@ -84,29 +93,29 @@ namespace Test
 
             Log.Information(string.Format("Listener_NetworkReceiveEvent {0} {1} {2}", peer.Address.ToString(), operationCode, returnCode));
 
-            if (returnCode != ReturnCode.Success)
-            {
-                return;
-            }
+            //if (returnCode != ReturnCode.Success)
+            //{
+            //    return;
+            //}
 
-            switch (operationCode)
-            {
-                case OperationCode.Login:
-                    break;
-                case OperationCode.Register:
-                    break;
-                case OperationCode.JoinRoom:
-                    OnJoinRoom(data, deliveryMethod);
-                    break;
-                case OperationCode.LeaveRoom:
-                    OnLeaveRoom(data, deliveryMethod);
-                    break;
-               
-                case OperationCode.SyncEvent:
-                    break;
-                default:
-                    break;
-            }
+            //switch (operationCode)
+            //{
+            //    case OperationCode.Login:
+            //        break;
+            //    case OperationCode.Register:
+            //        break;
+            //    case OperationCode.JoinRoom:
+            //        OnJoinRoom(data, deliveryMethod);
+            //        break;
+            //    case OperationCode.LeaveRoom:
+            //        OnLeaveRoom(data, deliveryMethod);
+            //        break;
+
+            //    case OperationCode.SyncEvent:
+            //        break;
+            //    default:
+            //        break;
+            //}
         }
 
         private void Listener_PeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)

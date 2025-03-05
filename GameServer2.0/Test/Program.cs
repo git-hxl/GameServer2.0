@@ -1,12 +1,9 @@
 ﻿using GameServer.Protocol;
 using GameServer;
 using LiteNetLib;
-using LiteNetLib.Utils;
-using MessagePack;
-using StackExchange.Redis;
-using System.Diagnostics;
+
 using Serilog;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace Test
 {
@@ -37,7 +34,7 @@ namespace Test
                 switch (key)
                 {
                     case "connect":
-                        Connect();
+                        Test();
                         break;
 
                     case "disconnect":
@@ -75,7 +72,7 @@ namespace Test
 
                     case "leaveroom":
 
-                        LeaveRoom();
+                        LeaveRoom(11);
                         break;
 
                     case "joinrobot":
@@ -92,14 +89,63 @@ namespace Test
             }
         }
 
+        private static async Task Test()
+        {
+
+            Random rand = new Random();
+            while (true)
+            {
+                int roomid = rand.Next(int.MinValue, int.MaxValue);
+                for (int i = 0; i < 1000; i++)
+                {
+                    OperationCode item = (OperationCode)Enum.GetValues(typeof(OperationCode)).GetValue(rand.Next(0, 10));
+
+                    switch (item)
+                    {
+                        case OperationCode.JoinRoom:
+                            JoinRoom(roomid);
+                            break;
+
+                        case OperationCode.LeaveRoom:
+
+                            LeaveRoom(roomid);
+                            break;
+
+                        case OperationCode.Disconnect:
+
+                            Disconnect();
+                            break;
+                        case OperationCode.Login:
+
+                            Connect();
+                            break;
+
+                        case OperationCode.CreateRoom:
+
+
+                            CreateRoom(roomid);
+
+                            break;
+                    }
+                }
+
+                await Task.Delay(100);
+            }
+        }
+
         private static void Connect()
         {
             Client.Instance.Connect("127.0.0.1", 8888);
+
+            LoginRequest loginRequest = new LoginRequest();
+
+
+            Client.Instance.SendRequest(OperationCode.Login, loginRequest, DeliveryMethod.ReliableOrdered);
         }
 
         private static void Disconnect()
         {
-            Client.Instance.Send(OperationCode.Disconnect, null, DeliveryMethod.ReliableOrdered);
+            Client.Instance.SendRequest(OperationCode.Disconnect, null, DeliveryMethod.ReliableOrdered);
             // Client.Instance.DisConnect();
         }
 
@@ -107,6 +153,7 @@ namespace Test
         {
             Random rand = new Random();
             CreateRoomRequest roomRequest = new CreateRoomRequest();
+            roomRequest.RoomID = id;
             RoomInfo roomInfo = new RoomInfo();
             roomInfo.RoomID = id;
 
@@ -116,7 +163,7 @@ namespace Test
 
             byte[] data = MessagePack.MessagePackSerializer.Serialize(roomRequest);
 
-            Client.Instance.Send(OperationCode.CreateRoom, data, DeliveryMethod.ReliableOrdered);
+            Client.Instance.SendRequest(OperationCode.CreateRoom, roomRequest, DeliveryMethod.ReliableOrdered);
 
         }
 
@@ -126,29 +173,27 @@ namespace Test
             roomRequest.RoomID = id;
             byte[] data = MessagePack.MessagePackSerializer.Serialize(roomRequest);
 
-            Client.Instance.Send(OperationCode.CloseRoom, data, DeliveryMethod.ReliableOrdered);
+            Client.Instance.SendRequest(OperationCode.CloseRoom, roomRequest, DeliveryMethod.ReliableOrdered);
         }
 
         private static void JoinRoom(int id)
         {
-            Random rand = new Random();
+
             JoinRoomRequest joinRoomRequest = new JoinRoomRequest();
 
-
-            joinRoomRequest.UserID = 123;
             joinRoomRequest.RoomID = id;
             byte[] data = MessagePack.MessagePackSerializer.Serialize(joinRoomRequest);
 
-            Client.Instance.Send(OperationCode.JoinRoom, data, DeliveryMethod.ReliableOrdered);
+            Client.Instance.SendRequest(OperationCode.JoinRoom, joinRoomRequest, DeliveryMethod.ReliableOrdered);
         }
 
-        private static void LeaveRoom()
+        private static void LeaveRoom(int id)
         {
             LeaveRoomRequest leaveRoomRequest = new LeaveRoomRequest();
-            leaveRoomRequest.UserID = 123;
+            leaveRoomRequest.RoomID = id;
             byte[] data = MessagePack.MessagePackSerializer.Serialize(leaveRoomRequest);
 
-            Client.Instance.Send(OperationCode.LeaveRoom, data, DeliveryMethod.ReliableOrdered);
+            Client.Instance.SendRequest(OperationCode.LeaveRoom, leaveRoomRequest, DeliveryMethod.ReliableOrdered);
         }
 
         private static void JoinRobot(int id)
@@ -163,7 +208,7 @@ namespace Test
             joinRoomRequest.UserInfo = playerInfo;
             byte[] data = MessagePack.MessagePackSerializer.Serialize(joinRoomRequest);
 
-            Client.Instance.Send(OperationCode.JoinRoom, data, DeliveryMethod.ReliableOrdered);
+            Client.Instance.SendRequest(OperationCode.JoinRoom, joinRoomRequest, DeliveryMethod.ReliableOrdered);
         }
     }
 }

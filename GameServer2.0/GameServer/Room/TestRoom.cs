@@ -11,7 +11,7 @@ namespace GameServer
         {
             base.OnInit(id);
 
-            AddRobot(100);
+           // AddRobot(100);
         }
 
         public void AddRobot(int count)

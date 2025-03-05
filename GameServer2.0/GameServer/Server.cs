@@ -124,7 +124,7 @@ namespace GameServer
             {
                 OperationCode operationCode = (OperationCode)reader.GetUShort();
 
-                Log.Information("接收请求：{0}  ping：{1}", operationCode, peer.Ping);
+               // Log.Information("接收请求：{0}  ping：{1}", operationCode, peer.Ping);
 
                 operationHandler.OnRequest(peer, operationCode, reader.GetRemainingBytes(), deliveryMethod);
             }

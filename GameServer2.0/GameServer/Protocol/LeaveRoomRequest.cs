@@ -7,7 +7,7 @@ namespace GameServer.Protocol
     [MessagePackObject(true)]
     public class LeaveRoomRequest : BaseRequest
     {
-
+        public int RoomID { get; set; }
     }
 
     [MessagePackObject(true)]

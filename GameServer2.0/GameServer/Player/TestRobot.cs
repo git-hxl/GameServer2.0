@@ -81,14 +81,16 @@ namespace GameServer
 
             byte[] sendData = MessagePack.MessagePackSerializer.Serialize(syncRequest);
 
-            if (Room != null)
+            var room = RoomManager.Instance.GetRoom<BaseRoom>(RoomID);
+
+            if (room != null)
             {
 
-                foreach (var item in Room.Players)
+                foreach (var item in room.Players)
                 {
                     if (item.Value.NetPeer != null)
                     {
-                        item.Value.SendSyncEvent(sendData, LiteNetLib.DeliveryMethod.Sequenced);
+                        item.Value.NetPeer.SendSyncEvent(sendData, LiteNetLib.DeliveryMethod.Sequenced);
                     }
                 }
             }

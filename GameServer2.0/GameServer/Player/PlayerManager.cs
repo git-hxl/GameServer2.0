@@ -41,8 +41,6 @@ namespace GameServer
 
             ReferencePool.Instance.Release(player);
 
-            Log.Information("CreatePlayer Failed,UserID {0} is existed!", userID);
-
             return default(T);
         }
 
@@ -51,10 +49,10 @@ namespace GameServer
             BasePlayer? basePlayer;
             if (Players.TryRemove(id, out basePlayer))
             {
-                var room = basePlayer.Room;
+                var room = RoomManager.Instance.GetRoom<BaseRoom>(basePlayer.ID);
                 if (room != null)
                 {
-                    room.OnLeavePlayer(basePlayer);
+                    Log.Error("玩家移除异常 检查是否已经退出房间");
                 }
                 ReferencePool.Instance.Release(basePlayer);
             }

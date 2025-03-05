@@ -10,5 +10,10 @@ namespace GameServer
         JoinRoomFail,
 
         LeaveRoomFail,
+
+        UpdatePlayerInfoFail,
+        UpdateRoomInfoFail,
+
+        SyncEventFail,
     }
 }

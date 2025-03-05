@@ -1,5 +1,4 @@
-﻿
-using GameServer.Protocol;
+﻿using GameServer.Protocol;
 using GameServer.Utils;
 using LiteNetLib;
 using MessagePack;
@@ -18,11 +17,11 @@ namespace GameServer
         public RoomInfo? RoomInfo { get; private set; }
         public ConcurrentDictionary<int, BasePlayer> Players { get; private set; } = new ConcurrentDictionary<int, BasePlayer>();
 
-        private CancellationTokenSource? _cancellationTokenSource;
-
         public DateTime CreateTime { get; private set; }
 
-        public long InactiveTime { get; private set; }
+        public float InactiveTime { get; private set; }
+
+        private Timer? _timer;
         public virtual void OnInit(int id)
         {
             ID = id;
@@ -31,9 +30,11 @@ namespace GameServer
 
             CreateTime = DateTime.Now;
 
-            Task.Run(Update);
+            InactiveTime = 0;
 
             Log.Information("OnCreateRoom RoomID {0} ", id);
+
+            _timer = new Timer(Update, null, 0, Server.UpdateInterval);
         }
 
         public void OnAcquire()
@@ -43,7 +44,9 @@ namespace GameServer
 
         public virtual void OnRelease()
         {
-            // throw new NotImplementedException();
+            if (_timer != null)
+                _timer.Dispose();
+            _timer = null;
         }
 
         public List<BasePlayer> GetActivePlayers()
@@ -71,13 +74,15 @@ namespace GameServer
                 joinRoomResponse.UserID = player.ID;
                 joinRoomResponse.RoomInfo = RoomInfo;
 
-                joinRoomResponse.Users = GetActivePlayers().Select((a) => a.UserInfo).ToList();
+                var players = GetActivePlayers();
+
+                joinRoomResponse.Users = players.Select((a) => a.UserInfo).ToList();
 
                 byte[] data = MessagePackSerializer.Serialize(joinRoomResponse);
 
-                foreach (var item in Players)
+                foreach (var item in players)
                 {
-                    item.Value.SendResponse(OperationCode.JoinRoom, ReturnCode.Success, joinRoomResponse);
+                    item.NetPeer?.SendResponse(OperationCode.JoinRoom, ReturnCode.Success, joinRoomResponse, "");
                 }
             }
         }
@@ -86,7 +91,7 @@ namespace GameServer
         {
             if (Players.TryRemove(player.ID, out _))
             {
-                player.OnLeaveRoom();
+                player.OnLeaveRoom(this);
 
                 if (MasterID == player.ID)
                 {
@@ -104,15 +109,14 @@ namespace GameServer
 
                 byte[] data = MessagePackSerializer.Serialize(leaveRoomResponse);
 
-                foreach (var item in Players)
+                var players = GetActivePlayers();
+
+                foreach (var item in players)
                 {
-                    if (item.Value.NetPeer != null)
-                    {
-                        item.Value.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, leaveRoomResponse);
-                    }
+                    item.NetPeer?.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, leaveRoomResponse);
                 }
 
-                player.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, leaveRoomResponse);
+                player.NetPeer?.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, leaveRoomResponse);
             }
         }
 
@@ -123,23 +127,16 @@ namespace GameServer
         {
             Log.Information("OnCloseRoom  RoomID {0}", ID);
 
-            if (_cancellationTokenSource != null)
+            var players = GetActivePlayers();
+
+            foreach (var item in players)
             {
-                _cancellationTokenSource.Cancel();
-                _cancellationTokenSource = null;
+                item.OnLeaveRoom(this);
             }
 
-            foreach (var item in Players)
+            foreach (var item in players)
             {
-                item.Value.OnLeaveRoom();
-            }
-
-            foreach (var item in Players)
-            {
-                if (item.Value != null)
-                {
-                    item.Value.SendResponse(OperationCode.CloseRoom, ReturnCode.Success, null);
-                }
+                item.NetPeer?.SendResponse(OperationCode.CloseRoom, ReturnCode.Success, null);
             }
 
             Players.Clear();
@@ -171,7 +168,7 @@ namespace GameServer
         /// <summary>
         /// 每帧调用
         /// </summary>
-        public virtual void OnUpdate(float deltaTime)
+        protected virtual void OnUpdate(float deltaTime)
         {
             foreach (var item in Players)
             {
@@ -179,39 +176,43 @@ namespace GameServer
 
                 player.OnUpdate(deltaTime);
             }
+
+           // Log.Information("OnUpdate RoomID:{0} deltaTime:{1}", ID, deltaTime);
         }
 
 
-        private async void Update()
+        private void Update(object? state)
         {
-            _cancellationTokenSource = new CancellationTokenSource();
             try
             {
-                while (true)
+                float deltaTime = Server.UpdateInterval / 1000f;
+
+                OnUpdate(deltaTime);
+
+                if (Players.Count <= 0)
                 {
-                    await Task.Delay(Server.UpdateInterval, _cancellationTokenSource.Token);
-
-                    OnUpdate(Server.UpdateInterval / 1000f);
-
-                    if (Players.Count <= 0)
-                    {
-                        InactiveTime += Server.UpdateInterval;
-                    }
-
-                    if (InactiveTime > 2 * 60 * 60 * 1000)
-                    {
-                        break;
-                    }
+                    InactiveTime += deltaTime;
                 }
+                else
+                {
+                    InactiveTime = 0f;
+                }
+
+                //移除长时间空载的房间
+
+                if (InactiveTime > 60f)
+                {
+                    RoomManager.Instance.CloseRoom(ID);
+
+                    Log.Information("OnStopUpdateRoom RoomID:{0}", ID);
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error(e.ToString());
 
                 RoomManager.Instance.CloseRoom(ID);
             }
-            catch (Exception ex)
-            {
-                if (ex is not TaskCanceledException)
-                    Log.Information(ex.ToString());
-            }
-            Log.Information("OnStopUpdateRoom RoomID:{0}", ID);
         }
     }
 }
