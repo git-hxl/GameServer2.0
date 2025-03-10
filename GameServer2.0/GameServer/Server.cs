@@ -72,7 +72,7 @@ namespace GameServer
             netManager.Start(Config.Port);
             Log.Information("start server:{0}", netManager.LocalPort);
 
-            RoomManager.Instance.CreateRoom<TestRoom>(-1);
+            RoomManager.Instance.CreateRoom<TestRoom>(0);
             RoomManager.Instance.CreateRoom<BaseRoom>(1);
 
             DebugStatisticsInfo();

@@ -35,6 +35,10 @@ namespace GameServer
             Log.Information("OnCreateRoom RoomID {0} ", id);
 
             _timer = new Timer(Update, null, 0, Server.UpdateInterval);
+
+            RoomInfo = new RoomInfo();
+            RoomInfo.RoomID = ID;   
+            RoomInfo.MasterID = MasterID;
         }
 
         public void OnAcquire()
@@ -91,12 +95,18 @@ namespace GameServer
         {
             if (Players.TryRemove(player.ID, out _))
             {
+                var players = GetActivePlayers();
+
                 if (MasterID == player.ID)
                 {
-                    var master = Players.Values.FirstOrDefault((a) => a.NetPeer != null);
+                    var master = players.FirstOrDefault();
                     if (master != null)
                     {
                         OnUpdateMaster(master.ID);
+                    }
+                    else
+                    {
+                        OnUpdateMaster(-1);
                     }
                 }
 
@@ -107,7 +117,7 @@ namespace GameServer
 
                 byte[] data = MessagePackSerializer.Serialize(leaveRoomResponse);
 
-                var players = GetActivePlayers();
+               
 
                 foreach (var item in players)
                 {
@@ -177,7 +187,7 @@ namespace GameServer
                 player.OnUpdate(deltaTime);
             }
 
-           // Log.Information("OnUpdate RoomID:{0} deltaTime:{1}", ID, deltaTime);
+            // Log.Information("OnUpdate RoomID:{0} deltaTime:{1}", ID, deltaTime);
         }
 
 
@@ -200,7 +210,7 @@ namespace GameServer
 
                 //移除长时间空载的房间
 
-                if (InactiveTime > 60f)
+                if (InactiveTime > 1 * 60 * 60f)
                 {
                     RoomManager.Instance.CloseRoom(ID);
 
