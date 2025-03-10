@@ -35,11 +35,6 @@ namespace GameServer.Utils
             netDataWriter.Put(data);
 
             netPeer.Send(netDataWriter, deliveryMethod);
-
-            if (returnCode != ReturnCode.Success)
-            {
-                Log.Error("OperationCode:{0} ReturnCode:{1} ErrorMsg:{2} peerID:{3}", code, returnCode, returnMsg, netPeer.Id);
-            }
         }
 
         public static void SendSyncEvent(this NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)

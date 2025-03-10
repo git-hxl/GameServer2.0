@@ -124,7 +124,7 @@ namespace GameServer
             {
                 OperationCode operationCode = (OperationCode)reader.GetUShort();
 
-               // Log.Information("接收请求：{0}  ping：{1}", operationCode, peer.Ping);
+                Log.Information("接受请求 {0} peerID {1}  ping {2}", operationCode, peer.Id, peer.Ping);
 
                 operationHandler.OnRequest(peer, operationCode, reader.GetRemainingBytes(), deliveryMethod);
             }
@@ -150,7 +150,7 @@ namespace GameServer
             PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
             PerformanceCounter ramCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use");
 
-            Task.Run(async() =>
+            Task.Run(async () =>
             {
                 while (true)
                 {
@@ -158,7 +158,7 @@ namespace GameServer
                     float cpuUsage = cpuCounter.NextValue();
                     float availableMemory = ramCounter.NextValue();
 
-                   // var o = new { RoomCount = RoomManager.Instance.Rooms.Count, PlayerCount = PlayerManager.Instance.Players.Count, Info = $"CPU: {cpuUsage.ToString("F1")}% Mem: {availableMemory.ToString("F1")}%" };
+                    // var o = new { RoomCount = RoomManager.Instance.Rooms.Count, PlayerCount = PlayerManager.Instance.Players.Count, Info = $"CPU: {cpuUsage.ToString("F1")}% Mem: {availableMemory.ToString("F1")}%" };
 
                     Log.Information("RoomCount: {0} PlayerCount：{1} CPU：{2:F1}% Mem：{3:F1}%", RoomManager.Instance.Rooms.Count, PlayerManager.Instance.Players.Count, cpuUsage, availableMemory);
                 }

@@ -80,26 +80,20 @@ namespace GameServer
         {
             CreateRoomRequest createRoomRequest = MessagePackSerializer.Deserialize<CreateRoomRequest>(data);
 
-            Log.Information("OnCreateRoom peerID:{0} roomID:{1} userID:{2}", netPeer.Id, createRoomRequest.RoomID, createRoomRequest.UserID);
+            Log.Information("创建房间 userID {0} roomID {1} ", createRoomRequest.UserID, createRoomRequest.RoomID);
 
-            BaseRoom? room = RoomManager.Instance.GetRoom<BaseRoom>(createRoomRequest.RoomID);
-
-            if (room != null)
-            {
-                netPeer.SendResponse(OperationCode.CreateRoom, ReturnCode.CreateRoomFail, null, "room is existed", deliveryMethod);
-                return;
-            }
-
-            room = RoomManager.Instance.CreateRoom<BaseRoom>(createRoomRequest.RoomID);
+            BaseRoom? room = RoomManager.Instance.CreateRoom<BaseRoom>(createRoomRequest.RoomID);
 
             if (room == null)
             {
-                netPeer.SendResponse(OperationCode.CreateRoom, ReturnCode.CreateRoomFail, null, "room is null", deliveryMethod);
+                netPeer.SendResponse(OperationCode.CreateRoom, ReturnCode.CreateRoomFail, null, "room is existed", deliveryMethod);
+
+                Log.Information("创建房间失败，房间已存在 roomId {0}", createRoomRequest.RoomID);
+
                 return;
             }
 
             room.OnUpdateRoomInfo(createRoomRequest.RoomInfo);
-
 
             CreateRoomResponse createRoomResponse = new CreateRoomResponse();
             createRoomResponse.RoomInfo = room.RoomInfo;
@@ -107,14 +101,13 @@ namespace GameServer
             var respdata = MessagePackSerializer.Serialize(createRoomResponse);
 
             netPeer.SendResponse(OperationCode.CreateRoom, ReturnCode.Success, createRoomResponse);
-
         }
 
         private void OnJoinRoom(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
         {
             JoinRoomRequest joinRoomRequest = MessagePackSerializer.Deserialize<JoinRoomRequest>(data);
 
-            Log.Information("OnJoinRoom peerID:{0} roomID:{1} userID:{2}", netPeer.Id, joinRoomRequest.RoomID, joinRoomRequest.UserID);
+            Log.Information("加入房间 userID {0} roomID {1} ", joinRoomRequest.UserID, joinRoomRequest.RoomID);
 
             UserInfo? userInfo = joinRoomRequest.UserInfo;
 
@@ -123,6 +116,8 @@ namespace GameServer
             if (room == null)
             {
                 netPeer.SendResponse(OperationCode.JoinRoom, ReturnCode.JoinRoomFail, null, "room is not existed", deliveryMethod);
+
+                Log.Information("加入房间失败 房间不存在 userID {0} roomID {1} ", joinRoomRequest.UserID, joinRoomRequest.RoomID);
                 return;
             }
 
@@ -131,14 +126,7 @@ namespace GameServer
             if (player == null)
             {
                 netPeer.SendResponse(OperationCode.JoinRoom, ReturnCode.JoinRoomFail, null, "player created failed", deliveryMethod);
-                return;
-            }
-
-            var playerRoom = RoomManager.Instance.GetRoom<BaseRoom>(player.RoomID);
-
-            if (playerRoom != null)
-            {
-                netPeer.SendResponse(OperationCode.JoinRoom, ReturnCode.JoinRoomFail, null, "player is in room", deliveryMethod);
+                Log.Information("加入房间失败 玩家创建失败 userID {0} roomID {1} ", joinRoomRequest.UserID, joinRoomRequest.RoomID);
                 return;
             }
 
@@ -150,12 +138,13 @@ namespace GameServer
         {
             LeaveRoomRequest leaveRoomRequest = MessagePackSerializer.Deserialize<LeaveRoomRequest>(data);
 
-            Log.Information("OnLeaveRoom peerID:{0} roomID:{1} userID:{2}", netPeer.Id, leaveRoomRequest.RoomID, leaveRoomRequest.UserID);
+            Log.Information("离开房间 userID {0} roomID {1} ", leaveRoomRequest.UserID, leaveRoomRequest.RoomID);
 
             BasePlayer? player = PlayerManager.Instance.GetPlayer<BasePlayer>(leaveRoomRequest.UserID);
             if (player == null)
             {
                 netPeer.SendResponse(OperationCode.LeaveRoom, ReturnCode.LeaveRoomFail, null, "player is null", deliveryMethod);
+                Log.Information("离开房间失败 玩家不存在 userID {0} roomID {1} ", leaveRoomRequest.UserID, leaveRoomRequest.RoomID);
                 return;
             }
 
@@ -164,6 +153,7 @@ namespace GameServer
             if (playerRoom == null)
             {
                 netPeer.SendResponse(OperationCode.LeaveRoom, ReturnCode.LeaveRoomFail, null, "player is not in room", deliveryMethod);
+                Log.Information("离开房间失败 房间不存在 userID {0} roomID {1} ", leaveRoomRequest.UserID, leaveRoomRequest.RoomID);
                 return;
             }
 
@@ -175,7 +165,7 @@ namespace GameServer
         {
             CloseRoomRequest closeRoomRequest = MessagePackSerializer.Deserialize<CloseRoomRequest>(data);
 
-            Log.Information("OnCloseRoom peerID:{0} roomID:{1} userID:{2}", netPeer.Id, closeRoomRequest.RoomID, closeRoomRequest.UserID);
+            Log.Information("关闭 userID {0} roomID {1} ", closeRoomRequest.UserID, closeRoomRequest.RoomID);
 
             var room = RoomManager.Instance.GetRoom<BaseRoom>(closeRoomRequest.RoomID);
             if (room != null)
@@ -188,7 +178,7 @@ namespace GameServer
         {
             UserInfo userInfo = MessagePackSerializer.Deserialize<UserInfo>(data);
 
-            Log.Information("OnUpdatePlayerInfo peerID:{0} userID:{1}", netPeer.Id, userInfo.UserID);
+            Log.Information("更新玩家信息 userID {0}", userInfo.UserID);
 
             BasePlayer? player = PlayerManager.Instance.GetPlayer<BasePlayer>(userInfo.UserID);
             if (player == null)
@@ -204,7 +194,7 @@ namespace GameServer
         {
             RoomInfo roomInfo = MessagePackSerializer.Deserialize<RoomInfo>(data);
 
-            Log.Information("OnUpdateRoomInfo peerID:{0} roomID:{1}", netPeer.Id, roomInfo.RoomID);
+            Log.Information("更新房间信息 peerID:{0} roomID:{1}", netPeer.Id, roomInfo.RoomID);
 
             BaseRoom? room = RoomManager.Instance.GetRoom<BaseRoom>(roomInfo.RoomID);
 

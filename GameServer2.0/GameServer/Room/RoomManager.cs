@@ -32,14 +32,13 @@ namespace GameServer
 
         public T? CreateRoom<T>(int roomId) where T : BaseRoom, new()
         {
-            BaseRoom? room = null;
-
-            if (Rooms.TryGetValue(roomId, out room))
+            if (GetRoom<T>(roomId) != null)
             {
-                return room as T;
+                Log.Information("CreateRoom Failed,RoomID {0} is existed!", roomId);
+                return null;
             }
 
-            room = ReferencePool.Instance.Acquire<T>();
+            var room = ReferencePool.Instance.Acquire<T>();
 
             if (Rooms.TryAdd(roomId, room))
             {

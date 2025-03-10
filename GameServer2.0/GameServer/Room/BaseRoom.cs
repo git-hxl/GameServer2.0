@@ -91,8 +91,6 @@ namespace GameServer
         {
             if (Players.TryRemove(player.ID, out _))
             {
-                player.OnLeaveRoom(this);
-
                 if (MasterID == player.ID)
                 {
                     var master = Players.Values.FirstOrDefault((a) => a.NetPeer != null);
@@ -117,6 +115,8 @@ namespace GameServer
                 }
 
                 player.NetPeer?.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, leaveRoomResponse);
+
+                player.OnLeaveRoom(this);
             }
         }
 

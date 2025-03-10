@@ -49,7 +49,7 @@ namespace GameServer
             BasePlayer? basePlayer;
             if (Players.TryRemove(id, out basePlayer))
             {
-                var room = RoomManager.Instance.GetRoom<BaseRoom>(basePlayer.ID);
+                var room = RoomManager.Instance.GetRoom<BaseRoom>(basePlayer.RoomID);
                 if (room != null)
                 {
                     Log.Error("玩家移除异常 检查是否已经退出房间");
