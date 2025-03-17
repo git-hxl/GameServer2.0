@@ -6,6 +6,7 @@ using System.Diagnostics;
 using Utils;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
+using GameServer.Database;
 
 namespace GameServer
 {
@@ -68,6 +69,8 @@ namespace GameServer
             {
                 return;
             }
+
+            RedisManager.Instance.Init();
 
             netManager.Start(Config.Port);
             Log.Information("start server:{0}", netManager.LocalPort);
