@@ -71,6 +71,7 @@ namespace GameServer
             }
 
             RedisManager.Instance.Init();
+            MysqlManager.Instance.Init();
 
             netManager.Start(Config.Port);
             Log.Information("start server:{0}", netManager.LocalPort);
