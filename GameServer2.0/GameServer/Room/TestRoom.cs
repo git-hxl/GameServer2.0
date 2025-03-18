@@ -22,9 +22,9 @@ namespace GameServer
                 TestRobot? robot = PlayerManager.Instance.CreatePlayer<TestRobot>(id, null);
                 UserInfo userInfo = new UserInfo();
                 userInfo.IsRobot = true;
-                robot.OnUpdatePlayerInfo(userInfo);
-               
-                OnJoinPlayer(robot);
+                robot.UpdatePlayerInfo(userInfo);
+
+                JoinPlayer(robot);
             }
         }
 

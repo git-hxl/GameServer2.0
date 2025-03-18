@@ -21,7 +21,8 @@ namespace GameServer
 
         public float InactiveTime { get; private set; }
 
-        private Timer? _timer;
+        public bool IsClosed { get; private set; }
+
         public virtual void OnInit(int id)
         {
             ID = id;
@@ -34,12 +35,66 @@ namespace GameServer
 
             Log.Information("OnCreateRoom RoomID {0} ", id);
 
-            _timer = new Timer(Update, null, 0, Server.UpdateInterval);
-
             RoomInfo = new RoomInfo();
-            RoomInfo.RoomID = ID;   
+            RoomInfo.RoomID = ID;
             RoomInfo.MasterID = MasterID;
+
+            IsClosed = false;
+
+            StartUpdate();
         }
+
+
+        private async Task StartUpdate()
+        {
+            var loopTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(Server.UpdateInterval));
+
+            while (await loopTimer.WaitForNextTickAsync())
+            {
+                try
+                {
+                    if (IsClosed)
+                    {
+                        break;
+                    }
+
+                    // 执行轮询任务
+
+                    float deltaTime = (float)loopTimer.Period.TotalSeconds;
+
+                    OnUpdate(deltaTime);
+
+                    Log.Information("Test RoomID:{0} ThreadID:{1} Period:{2}", ID, Thread.CurrentThread.ManagedThreadId, deltaTime);
+
+                    if (Players.Count <= 0)
+                    {
+                        InactiveTime += deltaTime;
+                    }
+                    else
+                    {
+                        InactiveTime = 0f;
+                    }
+
+                    //移除长时间空载的房间
+
+                    if (InactiveTime > 1 * 60)
+                    {
+                        RoomManager.Instance.CloseRoom(ID);
+
+                        Log.Information("OnStopUpdateRoom RoomID:{0}", ID);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.Message);
+
+                    RoomManager.Instance.CloseRoom(ID);
+
+                    break;
+                }
+            }
+        }
+
 
         public void OnAcquire()
         {
@@ -48,9 +103,7 @@ namespace GameServer
 
         public virtual void OnRelease()
         {
-            if (_timer != null)
-                _timer.Dispose();
-            _timer = null;
+           
         }
 
         public List<BasePlayer> GetActivePlayers()
@@ -61,7 +114,7 @@ namespace GameServer
             }
         }
 
-        public virtual void OnJoinPlayer(BasePlayer player)
+        public void JoinPlayer(BasePlayer player)
         {
             if (Players.TryAdd(player.ID, player))
             {
@@ -88,13 +141,17 @@ namespace GameServer
                 {
                     item.NetPeer?.SendResponse(OperationCode.JoinRoom, ReturnCode.Success, joinRoomResponse, "");
                 }
+
+                OnJoinPlayer(player);
             }
         }
 
-        public virtual void OnLeavePlayer(BasePlayer player)
+        public void RemovePlayer(BasePlayer player)
         {
             if (Players.TryRemove(player.ID, out _))
             {
+                OnLeavePlayer(player);
+
                 var players = GetActivePlayers();
 
                 if (MasterID == player.ID)
@@ -117,8 +174,6 @@ namespace GameServer
 
                 byte[] data = MessagePackSerializer.Serialize(leaveRoomResponse);
 
-               
-
                 foreach (var item in players)
                 {
                     item.NetPeer?.SendResponse(OperationCode.LeaveRoom, ReturnCode.Success, leaveRoomResponse);
@@ -130,12 +185,30 @@ namespace GameServer
             }
         }
 
+        public void CloseRoom()
+        {
+            RoomManager.Instance.CloseRoom(ID);
+        }
+
+
+        protected virtual void OnJoinPlayer(BasePlayer player)
+        {
+
+        }
+
+        protected virtual void OnLeavePlayer(BasePlayer player)
+        {
+
+        }
+
         /// <summary>
         /// 关闭房间
         /// </summary>
         public virtual void OnCloseRoom()
         {
             Log.Information("OnCloseRoom  RoomID {0}", ID);
+
+            IsClosed = true;
 
             var players = GetActivePlayers();
 
@@ -188,41 +261,6 @@ namespace GameServer
             }
 
             // Log.Information("OnUpdate RoomID:{0} deltaTime:{1}", ID, deltaTime);
-        }
-
-
-        private void Update(object? state)
-        {
-            try
-            {
-                float deltaTime = Server.UpdateInterval / 1000f;
-
-                OnUpdate(deltaTime);
-
-                if (Players.Count <= 0)
-                {
-                    InactiveTime += deltaTime;
-                }
-                else
-                {
-                    InactiveTime = 0f;
-                }
-
-                //移除长时间空载的房间
-
-                if (InactiveTime > 1 * 60 * 60f)
-                {
-                    RoomManager.Instance.CloseRoom(ID);
-
-                    Log.Information("OnStopUpdateRoom RoomID:{0}", ID);
-                }
-            }
-            catch (Exception e)
-            {
-                Log.Error(e.ToString());
-
-                RoomManager.Instance.CloseRoom(ID);
-            }
         }
     }
 }

@@ -56,7 +56,7 @@ namespace GameServer
             PlayerManager.Instance.RemovePlayer(ID);
         }
 
-        public virtual void OnUpdatePlayerInfo(UserInfo userInfo)
+        public virtual void UpdatePlayerInfo(UserInfo userInfo)
         {
             UserInfo = userInfo;
         }
@@ -76,7 +76,7 @@ namespace GameServer
                     var room = RoomManager.Instance.GetRoom<BaseRoom>(RoomID);
                     if (room != null)
                     {
-                        room.OnLeavePlayer(this);
+                        room.RemovePlayer(this);
                     }
                     else
                     {

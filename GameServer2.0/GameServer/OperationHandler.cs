@@ -130,8 +130,8 @@ namespace GameServer
                 return;
             }
 
-            player.OnUpdatePlayerInfo(userInfo);
-            room.OnJoinPlayer(player);
+            player.UpdatePlayerInfo(userInfo);
+            room.JoinPlayer(player);
         }
 
         private void OnLeaveRoom(NetPeer netPeer, byte[] data, DeliveryMethod deliveryMethod)
@@ -157,7 +157,7 @@ namespace GameServer
                 return;
             }
 
-            playerRoom.OnLeavePlayer(player);
+            playerRoom.RemovePlayer(player);
         }
 
 
