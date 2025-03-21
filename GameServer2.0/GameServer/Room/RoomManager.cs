@@ -25,7 +25,6 @@ namespace GameServer
             if (Rooms.TryRemove(roomId, out room))
             {
                 room.OnCloseRoom();
-
                 ReferencePool.Instance.Release(room);
             }
         }

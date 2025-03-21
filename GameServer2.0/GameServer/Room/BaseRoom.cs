@@ -116,19 +116,19 @@ namespace GameServer
 
         public void JoinPlayer(BasePlayer player)
         {
-            if (Players.TryAdd(player.ID, player))
+            if (Players.TryAdd(player.PlayerID, player))
             {
                 player.OnJoinRoom(this);
 
                 if (MasterID == -1)
                 {
-                    OnUpdateMaster(player.ID);
+                    OnUpdateMaster(player.PlayerID);
                 }
 
                 JoinRoomResponse joinRoomResponse = new JoinRoomResponse();
 
                 joinRoomResponse.RoomID = ID;
-                joinRoomResponse.UserID = player.ID;
+                joinRoomResponse.UserID = player.PlayerID;
                 joinRoomResponse.RoomInfo = RoomInfo;
 
                 var players = GetActivePlayers();
@@ -148,18 +148,18 @@ namespace GameServer
 
         public void RemovePlayer(BasePlayer player)
         {
-            if (Players.TryRemove(player.ID, out _))
+            if (Players.TryRemove(player.PlayerID, out _))
             {
                 OnLeavePlayer(player);
 
                 var players = GetActivePlayers();
 
-                if (MasterID == player.ID)
+                if (MasterID == player.PlayerID)
                 {
                     var master = players.FirstOrDefault();
                     if (master != null)
                     {
-                        OnUpdateMaster(master.ID);
+                        OnUpdateMaster(master.PlayerID);
                     }
                     else
                     {
@@ -169,7 +169,7 @@ namespace GameServer
 
                 LeaveRoomResponse leaveRoomResponse = new LeaveRoomResponse();
 
-                leaveRoomResponse.UserID = player.ID;
+                leaveRoomResponse.UserID = player.PlayerID;
                 leaveRoomResponse.RoomInfo = RoomInfo;
 
                 byte[] data = MessagePackSerializer.Serialize(leaveRoomResponse);
@@ -184,12 +184,6 @@ namespace GameServer
                 player.OnLeaveRoom(this);
             }
         }
-
-        public void CloseRoom()
-        {
-            RoomManager.Instance.CloseRoom(ID);
-        }
-
 
         protected virtual void OnJoinPlayer(BasePlayer player)
         {

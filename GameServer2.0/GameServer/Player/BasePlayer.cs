@@ -10,7 +10,7 @@ namespace GameServer
 {
     public class BasePlayer : IReference
     {
-        public int ID { get; protected set; }
+        public int PlayerID { get; protected set; }
 
         public NetPeer? NetPeer { get; protected set; }
 
@@ -22,7 +22,7 @@ namespace GameServer
 
         public virtual void OnInit(int id, NetPeer? netPeer)
         {
-            ID = id;
+            PlayerID = id;
 
             NetPeer = netPeer;
 
@@ -38,22 +38,22 @@ namespace GameServer
 
         public void OnRelease()
         {
-            ID = -1;
+            PlayerID = -1;
             NetPeer = null;
         }
 
         public virtual void OnJoinRoom(BaseRoom room)
         {
             RoomID = room.ID;
-            Log.Information("OnJoinRoom PlayerID {0} RoomID {1}", ID, room.ID);
+            Log.Information("OnJoinRoom PlayerID {0} RoomID {1}", PlayerID, room.ID);
         }
 
         public virtual void OnLeaveRoom(BaseRoom room)
         {
             RoomID = -1;
-            Log.Information("OnLeaveRoom PlayerID {0} RoomID {1}", ID, room.ID);
+            Log.Information("OnLeaveRoom PlayerID {0} RoomID {1}", PlayerID, room.ID);
 
-            PlayerManager.Instance.RemovePlayer(ID);
+            PlayerManager.Instance.RemovePlayer(PlayerID);
         }
 
         public virtual void UpdatePlayerInfo(UserInfo userInfo)
@@ -80,7 +80,7 @@ namespace GameServer
                     }
                     else
                     {
-                        PlayerManager.Instance.RemovePlayer(ID);
+                        PlayerManager.Instance.RemovePlayer(PlayerID);
                     }
                 }
             }
@@ -101,7 +101,7 @@ namespace GameServer
                 baseRequest = new BaseRequest();
             }
 
-            baseRequest.UserID = ID;
+            baseRequest.UserID = PlayerID;
             baseRequest.Timestamp = DateTimeUtil.TimeStamp;
 
             Type type = baseRequest.GetType();
