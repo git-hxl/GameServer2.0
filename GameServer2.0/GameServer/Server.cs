@@ -70,6 +70,14 @@ namespace GameServer
                 return;
             }
 
+            var value1 = ConfigManager.Instance.GetAllConfigs<RoadConfig>();
+
+            Log.Information(JsonConvert.SerializeObject(value1));
+
+            var value2 = ConfigManager.Instance.GetAllConfigs<RoadConfig>();
+
+            Log.Information(JsonConvert.SerializeObject(value2));
+
             RedisManager.Instance.Init();
             MysqlManager.Instance.Init();
 

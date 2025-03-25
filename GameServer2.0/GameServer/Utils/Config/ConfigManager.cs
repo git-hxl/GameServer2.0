@@ -6,10 +6,9 @@ namespace Utils
 {
     public class ConfigManager : Singleton<ConfigManager>
     {
+        private Dictionary<string, string> configs = new Dictionary<string, string>();
 
-        private Dictionary<string, string> _config = new Dictionary<string, string>();
-
-        private Dictionary<string, List<IConfig>> _configValues = new Dictionary<string, List<IConfig>>();
+        private Dictionary<string, List<IConfig>> castConfigs = new Dictionary<string, List<IConfig>>();
 
         protected override void OnDispose()
         {
@@ -25,58 +24,52 @@ namespace Utils
 
         private void ReadConfig()
         {
-            string[] jsonFiles = new string[] { "TestConfig.json" };
+            string[] jsonFiles = new string[] { "Utils/Config/Json/RoadConfig.json" };
 
             foreach (var file in jsonFiles)
             {
-                string json = File.ReadAllText( "./" + file);
+                string json = File.ReadAllText("./" + file);
 
                 string fileName = Path.GetFileNameWithoutExtension(file);
 
-                _config.Add(fileName, json);
+                configs.Add(fileName, json);
 
                 Log.Information("º”‘ÿ≈‰÷√Œƒº˛£∫" + fileName);
             }
         }
 
-        public List<T> GetAllConfigs<T>() where T : IConfig
+        public List<T>? GetAllConfigs<T>() where T : IConfig
         {
             string fileName = typeof(T).Name;
 
-            List<T> values = new List<T>();
+            List<T>? values = new List<T>();
 
-            if (_config.ContainsKey(fileName))
+            if (configs.ContainsKey(fileName))
             {
-                if (_configValues.ContainsKey(fileName))
+                string json = configs[fileName];
+                if (castConfigs.ContainsKey(fileName))
                 {
-                    foreach (var item in _configValues[fileName])
-                    {
-                        values.Add((T)item);
-                    }
+                    values = castConfigs[fileName].Cast<T>().ToList();
                 }
                 else
                 {
-                    values = JsonConvert.DeserializeObject<List<T>>(_config[fileName]);
+                    values = JsonConvert.DeserializeObject<List<T>>(json);
 
-                    List<IConfig> configValues = new List<IConfig>();
-
-                    foreach (var item in values)
+                    if (values != null)
                     {
-                        configValues.Add(item);
+                        castConfigs.Add(fileName, values.Cast<IConfig>().ToList());
                     }
-
-                    _configValues.Add(fileName, configValues);
                 }
             }
 
             return values;
         }
 
-        public T GetConfig<T>(int id) where T : IConfig
+        public T? GetConfig<T>(int id) where T : IConfig
         {
             string fileName = typeof(T).Name;
 
-            List<T> values = GetAllConfigs<T>();
+            List<T>? values = GetAllConfigs<T>();
 
             if (values != null)
             {

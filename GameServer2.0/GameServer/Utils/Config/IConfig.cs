@@ -1,8 +1,4 @@
-
-namespace Utils
+public interface IConfig
 {
-    public interface IConfig
-    {
-        int ID { get; set; }
-    }
+    int ID { get; set; }
 }

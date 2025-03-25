@@ -64,7 +64,7 @@ namespace GameServer
 
                     OnUpdate(deltaTime);
 
-                    Log.Information("Test RoomID:{0} ThreadID:{1} Period:{2}", ID, Thread.CurrentThread.ManagedThreadId, deltaTime);
+                    //Log.Information("Test RoomID:{0} ThreadID:{1} Period:{2}", ID, Thread.CurrentThread.ManagedThreadId, deltaTime);
 
                     if (Players.Count <= 0)
                     {
