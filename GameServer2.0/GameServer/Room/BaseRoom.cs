@@ -41,7 +41,7 @@ namespace GameServer
 
             IsClosed = false;
 
-            StartUpdate();
+            Task.Run(StartUpdate);
         }
 
 
